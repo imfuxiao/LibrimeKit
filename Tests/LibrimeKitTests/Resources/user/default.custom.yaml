@@ -1,0 +1,102 @@
+customization:
+  distribution_code_name: Squirrel
+  distribution_version: 2019-06-23
+  rime_version: 1.5.3
+patch:
+  schema_list:
+    - schema: flypy # 添加小鹤音形
+  switcher:
+    abbreviate_options: true
+    caption: "〔方案選單〕"
+    fold_options: true
+    hotkeys:
+      # - "Control+grave"
+      # - "Control+Shift+grave"
+      # - F4
+    # option_list_separator: "／"
+    # save_options:
+    #   - full_shape
+    #   - ascii_punct
+    #   - simplification
+    #   - extended_charset
+    #   - zh_hant
+    #   - zh_hans
+    #   - zh_hant_tw
+
+#
+# 可用的按键有 Caps_Lock, Shift_L, Shift_R, Control_L, control_R
+# Mac 系统上的鼠须管不能区分左、右，因此只有对 Shift_L, Control_L 的设定起作用
+#
+# 已输入编码时按切换键，可以进一步设定输入法中西文切换的形式
+# 可选的临时切换策略有三：
+# inline_ascii 在输入法的临时西文编辑区内输入字母、数字、符号、空格等，回车上屏后自动复位到中文
+# commit_text 已输入的候选文字上屏并切换至西文输入模式
+# commit_code 已输入的编码字符上屏并切换至西文输入模式
+# 设为 noop, 屏蔽该切换键
+#
+# 如果要把Caps Lock 设为只改变字母的大小写而不做中西文切换，可将 Caps_Lock 对应的切换方式设为 noop
+# 如果要以Caps Lock 切换到西文模式，默认输出小写字母，请置 ascii_composer/good_old_caps_lock: false
+# 如果要以Caps Lock 切换到西文模式，默认输出大写字母，请置 ascii_composer/good_old_caps_lock: true
+
+  ascii_composer/good_old_caps_lock: false
+  ascii_composer/switch_key:
+    Caps_Lock: noop
+    Shift_L: commit_code
+    Shift_R: noop
+    Control_L: noop
+    Control_R: noop
+  
+
+  recognizer:
+    patterns:
+      uppercase: "[A-Z][-_+.'0-9A-Za-z]*$"
+      reverse_lookup: "[a-z`]*`+[a-z`]*"
+      punct: ""
+
+  key_binder/bindings:
+    - when: paging
+      accept: bracketleft
+      send: Page_Up
+    - when: has_menu
+      accept: bracketright
+      send: Page_Down
+    # Emacs style
+    - { when: composing, accept: Control+p, send: Up }
+    - { when: composing, accept: Control+n, send: Down }
+    - { when: composing, accept: Control+b, send: Left }
+    - { when: composing, accept: Control+f, send: Right }
+    - { when: composing, accept: Control+a, send: Home }
+    - { when: composing, accept: Control+e, send: End }
+    - { when: composing, accept: Control+d, send: Delete }
+    - { when: composing, accept: Control+k, send: Shift+Delete }
+    - { when: composing, accept: Control+h, send: BackSpace }
+    - { when: composing, accept: Control+g, send: Escape }
+    - { when: composing, accept: Control+bracketleft, send: Escape }
+    - { when: composing, accept: Alt+v, send: Page_Up }
+    - { when: composing, accept: Control+v, send: Page_Down }
+    # move by word
+    - { when: composing, accept: ISO_Left_Tab, send: Shift+Left }
+    - { when: composing, accept: Shift+Tab, send: Shift+Left }
+    - { when: composing, accept: Tab, send: Shift+Right }
+    # flip page
+    - { when: has_menu, accept: minus, send: Page_Up }
+    - { when: has_menu, accept: equal, send: Page_Down }
+    - { when: paging, accept: comma, send: Page_Up }
+    - { when: has_menu, accept: period, send: Page_Down }
+    # hotkey switch
+    - { when: always, accept: Control+Shift+1, select: .next }
+    - { when: always, accept: Control+Shift+2, toggle: ascii_mode }
+    - { when: always, accept: Control+Shift+3, toggle: full_shape }
+    - { when: always, accept: Control+Shift+4, toggle: simplification }
+    - { when: always, accept: Control+Shift+5, toggle: extended_charset }
+    - { when: always, accept: Control+Shift+exclam, select: .next }
+    - { when: always, accept: Control+Shift+at, toggle: ascii_mode }
+    - { when: always, accept: Control+Shift+numbersign, toggle: full_shape }
+    - { when: always, accept: Control+Shift+dollar, toggle: simplification }
+    - { when: always, accept: Control+Shift+percent, toggle: extended_charset }
+    # - { when: always, accept: Shift+space, toggle: full_shape }
+    - { when: always, accept: Control+period, toggle: ascii_punct }
+
+
+
+
