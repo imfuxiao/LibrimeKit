@@ -22,10 +22,10 @@ public enum KeySymbol: Int {
 public final class RimeKit {
   public static let shared: RimeKit = .init()
 
-  private var engine: RimeEngine
+  private var engine: RimeAPI
 
   private init() {
-    engine = RimeEngine.shared()
+    engine = RimeAPI()
   }
 
   // NOTE: startService 前需要请先设置通知委托
@@ -91,7 +91,7 @@ public final class RimeKit {
     let iterator = engine.candidateListBegin(session)
     if let rimeIterator = iterator {
       while engine.candidateListNext(rimeIterator) {
-        result.append(rimeIterator.text())
+//        result.append(rimeIterator.)
       }
       engine.candidateListEnd(rimeIterator)
     }
@@ -108,9 +108,10 @@ public final class RimeKit {
     guard let commit = engine.getCommit(session) else {
       return ""
     }
-    let text = commit.text() ?? ""
-    engine.freeCommit(commit)
-    return text
+//    let text = commit.text() ?? ""
+//    engine.freeCommit(commit)
+//    return text
+    return ""
   }
 
   public func getStatus(_ session: IRimeSessionId) -> RimeInputStatus? {
@@ -119,15 +120,15 @@ public final class RimeKit {
     }
 
     let inputStatus = RimeInputStatus(
-      isAsciiMode: status.isAsciiMode,
-      isComposing: status.isComposing,
-      isAsciiPunct: status.isAsciiPunct,
-      isDisabled: status.isDisabled,
-      isFullShape: status.isFullShape,
-      isSimplified: status.isSimplified,
-      isTraditional: status.isTraditional,
-      schemaId: status.schemaId,
-      schemaName: status.schemaName
+      isAsciiMode: status.isAsciiMode(),
+      isComposing: status.isComposing(),
+      isAsciiPunct: status.isAsciiPunct(),
+      isDisabled: status.isDisabled(),
+      isFullShape: status.isFullShape(),
+      isSimplified: status.isSimplified(),
+      isTraditional: status.isTraditional(),
+      schemaId: status.schemaId(),
+      schemaName: status.schemaName()
     )
 
     engine.freeStatus(status)
@@ -160,7 +161,6 @@ public final class RimeKit {
     guard let list = engine.getSchemaList() else {
       return
     }
-    list.print()
     engine.freeSchemaList(list)
   }
 
