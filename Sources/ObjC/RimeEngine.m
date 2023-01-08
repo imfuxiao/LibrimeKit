@@ -17,147 +17,152 @@ static void rimeNotificationHandler(void *context_object,
 @implementation IRimeTraits {
   // 内部引用, 外部只读
   RimeTraits *traits;
-  
-  // 公开属性
-  NSString *sharedDataDir;
-  NSString *userDataDir;
-  NSString *distributionName;
-  NSString *distributionCodeName;
-  NSString *distributionVersion;
-  NSString *appName;
-  NSArray *modules;
-  int minLogLevel;
-  NSString *logDir;
-  NSString *prebuiltDataDir;
-  NSString *stagingDir;
 }
+
+@dynamic sharedDataDir;
+@dynamic userDataDir;
+@dynamic distributionName;
+@dynamic distributionCodeName;
+@dynamic distributionVersion;
+@dynamic appName;
+@dynamic modules;
+@dynamic minLogLevel;
+@dynamic logDir;
+@dynamic prebuiltDataDir;
+@dynamic stagingDir;
 
 - (id)init {
   self = [super init];
   if (self != nil) {
     RIME_STRUCT(RimeTraits, rimeTraits);
-    self->traits = &rimeTraits;
+    traits = &rimeTraits;
   }
   return self;
 }
 
 - (NSString *)sharedDataDir {
-  return self.sharedDataDir;
+  return sharedDataDir;
 }
-- (void)setSharedDataDir:(NSString *)sharedDataDir {
-  self.sharedDataDir = sharedDataDir;
-  if (sharedDataDir != nil) {
-    self->traits->shared_data_dir = [sharedDataDir UTF8String];
+- (void)setSharedDataDir:(NSString *)dir {
+  sharedDataDir = dir;
+  if (dir != nil && traits != NULL) {
+    traits->shared_data_dir = [dir UTF8String];
   }
 }
 
 - (NSString *)userDataDir {
-  return self.userDataDir;
+  return userDataDir;
 }
-- (void)setUserDataDir:(NSString *)userDataDir {
-  self.userDataDir = userDataDir;
-  if (userDataDir != nil) {
-    self->traits->user_data_dir = [userDataDir UTF8String];
+- (void)setUserDataDir:(NSString *)dir {
+  userDataDir = dir;
+  if (dir != nil && traits != NULL) {
+    traits->user_data_dir = [dir UTF8String];
   }
 }
 
 - (NSString *)distributionName {
-  return self.distributionName;
+  return distributionName;
 }
-- (void)setDistributionName:(NSString *)distributionName {
-  self.distributionName = distributionName;
-  if (distributionName != nil) {
-    self->traits->distribution_name = [distributionName UTF8String];
+- (void)setDistributionName:(NSString *)name {
+  distributionName = name;
+  if (name != nil && traits != NULL) {
+    traits->distribution_name = [name UTF8String];
   }
 }
 
 - (NSString *)distributionCodeName {
-  return self.distributionCodeName;
+  return distributionCodeName;
 }
-- (void)setDistributionCodeName:(NSString *)distributionCodeName {
-  self.distributionCodeName = distributionCodeName;
-  if (distributionCodeName != nil) {
-    self->traits->distribution_code_name = [distributionCodeName UTF8String];
+- (void)setDistributionCodeName:(NSString *)name {
+  distributionCodeName = name;
+  if (name != nil && traits != NULL) {
+    traits->distribution_code_name = [name UTF8String];
   }
 }
 
 - (NSString *)distributionVersion {
-  return self.distributionVersion;
+  return distributionVersion;
 }
-- (void)setDistributionVersion:(NSString *)distributionVersion {
-  self.distributionVersion = distributionVersion;
-  if (distributionVersion != nil) {
-    self->traits->distribution_version = [distributionVersion UTF8String];
+- (void)setDistributionVersion:(NSString *)version {
+  distributionVersion = version;
+  if (version != nil && traits != NULL) {
+    traits->distribution_version = [version UTF8String];
   }
 }
 
 - (NSString *)appName {
-  return self.appName;
+  return appName;
 }
-- (void)setAppName:(NSString *)appName {
-  self.appName = appName;
-  if (appName != nil) {
-    self->traits->app_name = [appName UTF8String];
+- (void)setAppName:(NSString *)name {
+  appName = name;
+  if (name != nil && traits != NULL) {
+    traits->app_name = [name UTF8String];
   }
 }
 
 - (NSArray *)modules {
-  return self.modules;
+  return modules;
 }
-- (void)setModules:(NSArray<NSString *> *)modules {
-  self.modules = modules;
-  if (modules == nil || [modules count] == 0) {
+- (void)setModules:(NSArray<NSString *> *)m {
+  modules = m;
+  if (m == nil || [m count] == 0) {
     return;
   }
   
-  NSUInteger count = [modules count];
+  NSUInteger count = [m count];
   const char *rimeModules[count];
   for (int i = 0; i < count; i++) {
-    rimeModules[i] = [modules[i] UTF8String];
+    rimeModules[i] = [m[i] UTF8String];
   }
-  self->traits->modules = rimeModules;
+  
+  if (traits != NULL) {
+    traits->modules = rimeModules;
+  }
 }
 
 - (int)minLogLevel {
-  return self.minLogLevel;
+  return minLogLevel;
 }
-- (void)setMinLogLevel:(int)minLogLevel {
-  self.minLogLevel = minLogLevel;
-  self->traits->min_log_level = minLogLevel;
+- (void)setMinLogLevel:(int)level {
+  minLogLevel = level;
+  if (traits != NULL) {
+    traits->min_log_level = level;
+  }
 }
 
 - (NSString *)logDir {
-  return self.logDir;
+  return logDir;
 }
-- (void)setLogDir:(NSString *)logDir {
-  self.logDir = logDir;
-  if (logDir != nil) {
-    self->traits->log_dir = [logDir UTF8String];
+- (void)setLogDir:(NSString *)dir {
+  logDir = dir;
+  if (dir != nil && traits != NULL) {
+    traits->log_dir = [dir UTF8String];
   }
 }
 
 - (NSString *)prebuiltDataDir {
-  return self.prebuiltDataDir;
+  return prebuiltDataDir;
 }
-- (void)setPrebuiltDataDir:(NSString *)prebuiltDataDir {
-  self.prebuiltDataDir = prebuiltDataDir;
-  if (prebuiltDataDir != nil) {
-    self->traits->prebuilt_data_dir = [prebuiltDataDir UTF8String];
+- (void)setPrebuiltDataDir:(NSString *)dir {
+  prebuiltDataDir = dir;
+  if (dir != nil && traits != NULL) {
+    traits->prebuilt_data_dir = [dir UTF8String];
   }
 }
 
 - (NSString *)stagingDir {
-  return self.stagingDir;
+  return stagingDir;
 }
-- (void)setStagingDir:(NSString *)stagingDir {
-  self.stagingDir = stagingDir;
-  if (stagingDir != nil) {
-    self->traits->staging_dir = [stagingDir UTF8String];
+- (void)setStagingDir:(NSString *)dir {
+  stagingDir = dir;
+  if (dir != nil && traits != NULL) {
+    traits->staging_dir = [dir UTF8String];
   }
 }
 
-- (RimeTraits *)rimeTraits {
-  return self->traits;
+- (RimeTraits *) rimeTraits {
+  
+  return traits;
 }
 
 @end
@@ -166,28 +171,28 @@ static void rimeNotificationHandler(void *context_object,
   RimeComposition *composition;
 }
 
-- initWithComposition:(RimeComposition *)compostion {
+- initWithComposition:(RimeComposition *)c {
   if ((self = [super init]) != nil) {
-    self->composition = compostion;
+    composition = c;
   }
   return self;
 }
 
 - (int)length {
-  return self->composition->length;
+  return composition->length;
 }
 - (int)cursorPos {
   
-  return self->composition->cursor_pos;
+  return composition->cursor_pos;
 }
 - (int)selStart {
-  return self->composition->sel_start;
+  return composition->sel_start;
 }
 - (int)selEnd {
-  return self->composition->sel_end;
+  return composition->sel_end;
 }
 - (NSString *)preedit {
-  return [NSString stringWithUTF8String:self->composition->preedit];
+  return [NSString stringWithUTF8String:composition->preedit];
 }
 
 @end
@@ -196,21 +201,21 @@ static void rimeNotificationHandler(void *context_object,
   RimeCandidate *candidate;
 }
 
-- initWithCandidate:(RimeCandidate *)candidate {
+- initWithCandidate:(RimeCandidate *)c {
   if ((self = [super init]) != nil) {
-    self->candidate = candidate;
+    candidate = c;
   }
   return self;
 }
 
 - (NSString *)text {
-  return [NSString stringWithUTF8String:self->candidate->text];
+  return [NSString stringWithUTF8String:candidate->text];
 }
 - (NSString *)comment {
-  return [NSString stringWithUTF8String:self->candidate->text];
+  return [NSString stringWithUTF8String:candidate->text];
 }
 - (NSString *)reserved {
-  return [NSString stringWithUTF8String:self->candidate->text];
+  return [NSString stringWithUTF8String:candidate->text];
 }
 
 @end
@@ -219,42 +224,42 @@ static void rimeNotificationHandler(void *context_object,
   RimeMenu *menu;
 }
 
-- (id)initWithMenu:(RimeMenu *)menu {
+- (id)initWithMenu:(RimeMenu *)m {
   if ((self = [super init]) != nil) {
-    self->menu = menu;
+    menu = m;
   }
   return self;
 }
 
 - (int)pageSize {
-  return self->menu->page_size;
+  return menu->page_size;
 }
 
 - (int)pageNo {
-  return self->menu->page_no;
+  return menu->page_no;
 }
 
 - (BOOL)isLastPage {
-  return self->menu->is_last_page == True;
+  return menu->is_last_page == True;
 }
 
 - (int)highlightedCandidateIndex {
-  return self->menu->highlighted_candidate_index;
+  return menu->highlighted_candidate_index;
 }
 
 - (int)numCandidates {
-  return self->menu->num_candidates;
+  return menu->num_candidates;
 }
 
 - (NSArray<IRimeCandidate *> *)candidates {
-  int count = self->menu->num_candidates;
+  int count = menu->num_candidates;
   if (!count) {
     return nil;
   }
   
   NSMutableArray<IRimeCandidate *> *r =
   [NSMutableArray arrayWithCapacity:count];
-  RimeCandidate *candidates = self->menu->candidates;
+  RimeCandidate *candidates = menu->candidates;
   for (int i = 0; i < count; i++) {
     RimeCandidate candidate = candidates[i];
     [r addObject:[[IRimeCandidate alloc] initWithCandidate:&candidate]];
@@ -263,39 +268,32 @@ static void rimeNotificationHandler(void *context_object,
 }
 
 - (NSString *)selectKeys {
-  return [NSString stringWithUTF8String:self->menu->select_keys];
+  return [NSString stringWithUTF8String:menu->select_keys];
 }
 
 @end
 
 @implementation IRimeCommit {
   RimeCommit *rimeCommit;
-  
-  int dataSize;
-  NSString *text;
 }
 
-- (id)initWithRimeCommit:(RimeCommit *)commit {
+- (id)initWithRimeCommit:(RimeCommit *)c {
   if ((self = [super init]) != nil) {
-    self->rimeCommit = commit;
-    if (commit != NULL) {
-      self->dataSize = commit->data_size;
-      self->text = [NSString stringWithUTF8String:commit->text];
-    }
+    rimeCommit = c;
   }
   return self;
 }
 
 - (int)dataSize {
-  return self.dataSize;
+  return rimeCommit->data_size;
 }
 
 - (NSString *)text {
-  return self.text;
+  return [NSString stringWithUTF8String:rimeCommit->text];
 }
 
 - (RimeCommit *)rimeCommit {
-  return self->rimeCommit;
+  return rimeCommit;
 }
 
 @end
@@ -307,34 +305,34 @@ static void rimeNotificationHandler(void *context_object,
   IRimeMenu *menu;
 }
 
-- (id)initWithContext:(RimeContext *)context {
+- (id)initWithContext:(RimeContext *)ctx {
   if ((self = [super init]) != nil) {
-    self->rimeContext = context;
-    if (context != nil) {
-      self->composition =
-      [[IRimeComposition alloc] initWithComposition:&context->composition];
-      self->menu = [[IRimeMenu alloc] initWithMenu:&context->menu];
+    rimeContext = ctx;
+    if (ctx != nil) {
+      composition =
+      [[IRimeComposition alloc] initWithComposition:&ctx->composition];
+      menu = [[IRimeMenu alloc] initWithMenu:&ctx->menu];
     }
   }
   return self;
 }
 
 - (int)dataSize {
-  if (self->rimeContext != nil) {
-    return self->rimeContext->data_size;
+  if (rimeContext != nil) {
+    return rimeContext->data_size;
   }
   return 0;
 }
 
 - (IRimeComposition *)composition {
-  return self.composition;
+  return composition;
 }
 - (IRimeMenu *)menu {
-  return self.menu;
+  return menu;
 }
 
 - (NSString *)commitTextPreview {
-  return [NSString stringWithUTF8String:self->rimeContext->commit_text_preview];
+  return [NSString stringWithUTF8String:rimeContext->commit_text_preview];
 }
 
 - (NSArray<NSString *> *)selectLabels {
@@ -343,7 +341,7 @@ static void rimeNotificationHandler(void *context_object,
     return nil;
   }
   NSMutableArray<NSString *> *r = [NSMutableArray arrayWithCapacity:dataSize];
-  char **labels = self->rimeContext->select_labels;
+  char **labels = rimeContext->select_labels;
   for (int i = 0; i < dataSize; i++) {
     NSString *str = [NSString stringWithUTF8String:labels[i]];
     [r addObject:str];
@@ -352,7 +350,7 @@ static void rimeNotificationHandler(void *context_object,
 }
 
 - (RimeContext *)rimeContext {
-  return self->rimeContext;
+  return rimeContext;
 }
 
 @end
@@ -363,40 +361,40 @@ static void rimeNotificationHandler(void *context_object,
 
 - (id)initWithStatus:(RimeStatus *)status {
   if ((self = [super init]) != nil) {
-    self->rimeStatus = status;
+    rimeStatus = status;
   }
   return self;
 }
 
 - (int)dataSize {
-  return self->rimeStatus->data_size;
+  return rimeStatus->data_size;
 }
 - (NSString *)schemaId {
-  return self->rimeStatus->schema_id ? @(self->rimeStatus->schema_id) : @"";
+  return rimeStatus->schema_id ? @(rimeStatus->schema_id) : @"";
 }
 - (NSString *)schemaName {
-  return self->rimeStatus->schema_name ? @(self->rimeStatus->schema_name) : @"";
+  return rimeStatus->schema_name ? @(rimeStatus->schema_name) : @"";
 }
 - (BOOL)isDisabled {
-  return self->rimeStatus->is_disabled == True;
+  return rimeStatus->is_disabled == True;
 }
 - (BOOL)isComposing {
-  return self->rimeStatus->is_composing == True;
+  return rimeStatus->is_composing == True;
 }
 - (BOOL)isAsciiMode {
-  return self->rimeStatus->is_ascii_mode == True;
+  return rimeStatus->is_ascii_mode == True;
 }
 - (BOOL)isFullShape {
-  return self->rimeStatus->is_full_shape == True;
+  return rimeStatus->is_full_shape == True;
 }
 - (BOOL)isSimplified {
-  return self->rimeStatus->is_simplified == True;
+  return rimeStatus->is_simplified == True;
 }
 - (BOOL)isTraditional {
-  return self->rimeStatus->is_traditional == True;
+  return rimeStatus->is_traditional == True;
 }
 - (BOOL)isAsciiPunct {
-  return self->rimeStatus->is_ascii_punct == True;
+  return rimeStatus->is_ascii_punct == True;
 }
 
 - (RimeStatus *)rimeStatus {
@@ -423,32 +421,27 @@ static void rimeNotificationHandler(void *context_object,
 
 - (id)initWithIterator:(RimeCandidateListIterator *)iterator {
   if ((self = [super init]) != nil) {
-    self->rimeCandidateListIterator = iterator;
+    rimeCandidateListIterator = iterator;
   }
+  return self;
 }
 
-- (NSObject *)ptr {
-  if (self->rimeCandidateListIterator == nil) {
-    return nil;
-  }
-  return CFBridgingRelease(self->rimeCandidateListIterator->ptr);
-}
 - (int)index {
-  if (self->rimeCandidateListIterator == nil) {
+  if (rimeCandidateListIterator == nil) {
     return nil;
   }
-  return self->rimeCandidateListIterator->index;
+  return rimeCandidateListIterator->index;
 }
 - (IRimeCandidate *)candidate {
-  if (self->rimeCandidateListIterator == nil) {
+  if (rimeCandidateListIterator == nil) {
     return nil;
   }
   return [[IRimeCandidate alloc]
-          initWithCandidate:&self->rimeCandidateListIterator->candidate];
+          initWithCandidate:&rimeCandidateListIterator->candidate];
 }
 
 - (RimeCandidateListIterator *)rimeCandidateListIterator {
-  return self->rimeCandidateListIterator;
+  return rimeCandidateListIterator;
 }
 
 @end
@@ -458,15 +451,15 @@ static void rimeNotificationHandler(void *context_object,
 }
 
 // 参考 IRimeCandidateListIterator.ptr
-- (NSObject *)ptr {
-  if (self->config == nil) {
+- (id)ptr {
+  if (config == nil) {
     return nil;
   }
-  return CFBridgingRelease(self->config->ptr);
+  return CFBridgingRelease(config->ptr);
 }
 
 - (RimeConfig *)config {
-  return self->config;
+  return config;
 }
 
 @end
@@ -476,40 +469,40 @@ static void rimeNotificationHandler(void *context_object,
 }
 
 - (NSObject *)list {
-  if (self->iterator == nil) {
+  if (iterator == nil) {
     return nil;
   }
-  return CFBridgingRelease(self->iterator->list);
+  return CFBridgingRelease(iterator->list);
 }
 - (NSObject *)map {
-  if (self->iterator == nil) {
+  if (iterator == nil) {
     return nil;
   }
-  return CFBridgingRelease(self->iterator->map);
+  return CFBridgingRelease(iterator->map);
 }
 
 - (int)index {
-  if (self->iterator == nil) {
+  if (iterator == nil) {
     return 0;
   }
-  return self->iterator->index;
+  return iterator->index;
 }
 - (NSString *)key {
-  if (self->iterator == nil) {
+  if (iterator == nil) {
     return nil;
   }
-  return @(self->iterator->key);
+  return @(iterator->key);
 }
 - (NSString *)path {
   
-  if (self->iterator == nil) {
+  if (iterator == nil) {
     return nil;
   }
-  return @(self->iterator->path);
+  return @(iterator->path);
 }
 
 - (RimeConfigIterator *)iterator {
-  return self->iterator;
+  return iterator;
 }
 @end
 
@@ -517,30 +510,30 @@ static void rimeNotificationHandler(void *context_object,
   RimeSchemaListItem *item;
 }
 
-- (id)initWithItem:(RimeSchemaListItem *)item {
+- (id)initWithItem:(RimeSchemaListItem *)i {
   if ((self = [super init]) != nil) {
-    self->item = item;
+    item = i;
   }
   return self;
 }
 
 - (NSString *)schemaId {
-  if (self->item == nil) {
+  if (item == nil) {
     return nil;
   }
-  return @(self->item->schema_id);
+  return @(item->schema_id);
 }
 - (NSString *)name {
-  if (self->item == nil) {
+  if (item == nil) {
     return nil;
   }
-  return @(self->item->name);
+  return @(item->name);
 }
 - (NSObject *)reserved {
-  if (self->item == nil) {
+  if (item == nil) {
     return nil;
   }
-  return CFBridgingRelease(self->item->reserved);
+  return CFBridgingRelease(item->reserved);
 }
 
 @end
@@ -551,21 +544,21 @@ static void rimeNotificationHandler(void *context_object,
 
 - (id)initWithSchemaList:(RimeSchemaList *)list {
   if ((self = [super init]) != nil) {
-    self->schemalist = list;
+    schemalist = list;
   }
   return self;
 }
 
 - (NSArray<IRimeSchemaListItem *> *)list {
-  if (self->schemalist == nil) {
+  if (schemalist == nil) {
     return nil;
   }
-  size_t count = self->schemalist->size;
+  size_t count = schemalist->size;
   if (!count) {
     return nil;
   }
   
-  RimeSchemaListItem *list = self->schemalist->list;
+  RimeSchemaListItem *list = schemalist->list;
   NSMutableArray<IRimeSchemaListItem *> *r =
   [NSMutableArray arrayWithCapacity:count];
   for (int i = 0; i < count; i++) {
@@ -576,7 +569,7 @@ static void rimeNotificationHandler(void *context_object,
 }
 
 - (RimeSchemaList *)schemalist {
-  return self->schemalist;
+  return schemalist;
 }
 
 @end
@@ -587,20 +580,20 @@ static void rimeNotificationHandler(void *context_object,
 
 - (id)initWithCustomApi:(RimeCustomApi *)api {
   if ((self = [super init]) != nil) {
-    self->customApi = api;
+    customApi = api;
   }
   return self;
 }
 
 - (int)dataSize {
-  if (self->customApi == nil) {
+  if (customApi == nil) {
     return 0;
   }
-  return self->customApi->data_size;
+  return customApi->data_size;
 }
 
 - (RimeCustomApi *)customApi {
-  return self->customApi;
+  return customApi;
 }
 
 @end
@@ -612,51 +605,60 @@ static void rimeNotificationHandler(void *context_object,
   RimeModule *module;
 }
 
-- (id)initWithModule:(RimeModule *)module {
+- (id)initWithModule:(RimeModule *)m {
   if ((self = [super init]) != nil) {
-    self->module = module;
+    module = m;
   }
   return self;
 }
 
 - (NSString *)moduleName {
-  if (self->module == nil) {
+  if (module == nil) {
     return nil;
   }
-  return @(self->module->module_name);
+  return @(module->module_name);
 }
 
 - (void)initialize {
-  if (self->module == nil) {
+  if (module == nil) {
     return;
   }
   
-  self->module->initialize();
+  module->initialize();
 }
 - (void)finalize {
-  if (self->module == nil) {
+  if (module == nil) {
     return;
   }
   
-  self->module->finalize();
+  module->finalize();
 }
 - (IRimeCustomApi *)getApi {
-  if (self->module == nil) {
+  if (module == nil) {
     return;
   }
-  RimeCustomApi *api = self->module->get_api();
+  RimeCustomApi *api = module->get_api();
   return [[IRimeCustomApi alloc] initWithCustomApi:api];
 }
 
 - (RimeModule *)module {
-  return self->module;
+  return module;
 }
 
 @end
 
 // RimeEngin 实现
 
-@implementation RimeAPI
+@implementation IRimeAPI {
+  RimeApi *api;
+}
+
+- (id)init {
+  if ((self = [super init]) != nil) {
+    api = rime_get_api();
+  }
+  return self;
+}
 
 //! Receive notifications
 /*!
@@ -721,110 +723,111 @@ static void rimeNotificationHandler(void *context_object,
     }
   };
   
-  rime_get_api()->set_notification_handler(rimeNotificationHandler,
-                                           (__bridge void *)ctx);
+  api->set_notification_handler(rimeNotificationHandler, (__bridge void *)ctx);
 }
 
 // Setup
 
 // 在访问任何其他API之前调用这个函数。
 - (void)setup:(IRimeTraits *)traits {
-  rime_get_api()->setup([traits rimeTraits]);
+  RimeTraits *t = [traits rimeTraits];
+  api->setup(t);
 }
 
 // Entry and exit
 
 - (void)initialize:(IRimeTraits *)traits {
   if (traits == NULL) {
-    rime_get_api()->initialize(NULL);
+    api->initialize(NULL);
     return;
   }
-  rime_get_api()->initialize([traits rimeTraits]);
+  RimeTraits *t = [traits rimeTraits];
+  api->initialize(t);
 }
 
 - (void)finalize {
-  rime_get_api()->finalize();
+  api->finalize();
 }
 
 - (BOOL)startMaintenance:(BOOL)fullCheck {
-  return rime_get_api()->start_maintenance(fullCheck ? True : False) == True;
+  return api->start_maintenance(fullCheck ? True : False) == True;
 }
-- (BOOL)isMaintenancing {
-  return rime_get_api()->is_maintenance_mode() == True;
+- (bool)isMaintenancing {
+  return api->is_maintenance_mode() == True;
 }
 - (void)joinMaintenanceThread {
-  rime_get_api()->join_maintenance_thread();
+  api->join_maintenance_thread();
 }
 
 // Deployment
 
 - (void)deployerInitialize:(IRimeTraits *)traits {
-  rime_get_api()->deployer_initialize([traits rimeTraits]);
+  api->deployer_initialize([traits rimeTraits]);
 }
 - (BOOL)prebuildAllSchemas {
-  return rime_get_api()->prebuild() == True;
+  return api->prebuild() == True;
 }
 - (BOOL)deployWorkspace {
-  return rime_get_api()->deploy() == True;
+  return api->deploy() == True;
 }
 - (BOOL)deploySchema:(NSString *)schemaFile {
-  return rime_get_api()->deploy_schema([schemaFile UTF8String]) == True;
+  return api->deploy_schema([schemaFile UTF8String]) == True;
 }
 - (BOOL)deployConfigFile:(NSString *)fileName versionKey:(NSString *)key {
-  return rime_get_api()->deploy_config_file([fileName UTF8String],
-                                            [key UTF8String]) == True;
+  return api->deploy_config_file([fileName UTF8String], [key UTF8String]) ==
+  True;
 }
 
 - (BOOL)syncUserData {
-  return rime_get_api()->sync_user_data();
+  return api->sync_user_data();
 }
 
 // Session management
 
 - (IRimeSessionId)createSession {
-  RimeSessionId sessionId = rime_get_api()->create_session();
+  RimeSessionId sessionId = api->create_session();
   return (IRimeSessionId)sessionId;
 }
 - (BOOL)findSession:(IRimeSessionId)session {
   RimeSessionId sessionId = (RimeSessionId)session;
-  return rime_get_api()->find_session(sessionId) == True;
+  return api->find_session(sessionId) == True;
 }
 - (BOOL)destroySession:(IRimeSessionId)session {
   RimeSessionId sessionId = (RimeSessionId)session;
-  return rime_get_api()->destroy_session(sessionId) == True;
+  return api->destroy_session(sessionId) == True;
 }
 - (void)cleanupStaleSessions {
-  rime_get_api()->cleanup_stale_sessions();
+  api->cleanup_stale_sessions();
 }
 - (void)cleanupAllSessions {
-  rime_get_api()->cleanup_all_sessions();
+  api->cleanup_all_sessions();
 }
 
 // Input
 
 - (BOOL)processKey:(IRimeSessionId)session keycode:(int)code mask:(int)mask {
   RimeSessionId sessionId = (RimeSessionId)session;
-  return rime_get_api()->process_key(sessionId, code, mask) == True;
+  return api->process_key(sessionId, code, mask) == True;
 }
 /*!
  * return True if there is unread commit text
  */
 - (BOOL)commitComposition:(IRimeSessionId)session {
   RimeSessionId sessionId = (RimeSessionId)session;
-  return rime_get_api()->commit_composition(sessionId) == True;
+  return api->commit_composition(sessionId) == True;
 }
 
 - (void)clearComposition:(IRimeSessionId)session;
 {
   RimeSessionId sessionId = (RimeSessionId)session;
-  rime_get_api()->clear_composition(sessionId);
+  api->clear_composition(sessionId);
 }
 
 // Output
 
 - (NSString *)getInput:(IRimeSessionId)session {
   RimeSessionId sessionId = (RimeSessionId)session;
-  const char *input = rime_get_api()->get_input(sessionId);
+  const char *input = api->get_input(sessionId);
   if (input != NULL) {
     return [NSString stringWithUTF8String:input];
   }
@@ -835,61 +838,64 @@ static void rimeNotificationHandler(void *context_object,
 {
   RimeSessionId sessionId = (RimeSessionId)session;
   RIME_STRUCT(RimeCommit, rimeCommit);
-  if (rime_get_api()->get_commit(sessionId, &rimeCommit) == True) {
+  if (api->get_commit(sessionId, &rimeCommit) == True) {
     IRimeCommit *commit = [[IRimeCommit alloc] initWithRimeCommit:&rimeCommit];
     return commit;
   }
   return nil;
 }
 - (BOOL)freeCommit:(IRimeCommit *)commit {
-  return rime_get_api()->free_commit([commit rimeCommit]) == True;
+  return api->free_commit([commit rimeCommit]) == True;
 }
 
 - (IRimeContext *)getContext:(IRimeSessionId)session {
   RimeSessionId sessionId = (RimeSessionId)session;
   RIME_STRUCT(RimeContext, rimeContext);
-  if (rime_get_api()->get_context(sessionId, &rimeContext) == True) {
+  if (api->get_context(sessionId, &rimeContext) == True) {
     return [[IRimeContext alloc] initWithContext:&rimeContext];
   }
   return nil;
 }
 - (BOOL)freeContext:(IRimeContext *)context;
-{ return rime_get_api()->free_context([context rimeContext]) == True; }
+{ return api->free_context([context rimeContext]) == True; }
 
 - (IRimeStatus *)getStatus:(IRimeSessionId)session {
   RimeSessionId sessionId = (RimeSessionId)session;
   RIME_STRUCT(RimeStatus, rimeStatus);
-  if (rime_get_api()->get_status(sessionId, &rimeStatus) == True) {
+  RimeStatus *s = &rimeStatus;
+  if (api->get_status(sessionId, s) == True) {
     return [[IRimeStatus alloc] initWithStatus:&rimeStatus];
   }
   return nil;
 }
 
-- (BOOL)freeStatus:(IRimeStatus *)status;
-{ return rime_get_api()->free_status([status rimeStatus]) == True; }
+- (BOOL)freeStatus:(IRimeStatus *)status {
+  RimeStatus *s = [status rimeStatus];
+  return api->free_status(s) == True;
+}
 
 // Accessing candidate list
 - (IRimeCandidateListIterator *)candidateListBegin:(IRimeSessionId)session {
   RimeSessionId sessionId = (RimeSessionId)session;
   RimeCandidateListIterator iterator = {0};
-  if (rime_get_api()->candidate_list_begin(sessionId, &iterator) == True) {
-    return [[IRimeCandidateListIterator alloc] initWithIterator: &iterator];
+  if (api->candidate_list_begin(sessionId, &iterator) == True) {
+    return [[IRimeCandidateListIterator alloc] initWithIterator:&iterator];
   }
   return nil;
 }
 - (BOOL)candidateListNext:(IRimeCandidateListIterator *)iterator {
-  return rime_get_api()->candidate_list_next([iterator rimeCandidateListIterator]) == True;
+  return api->candidate_list_next([iterator rimeCandidateListIterator]) == True;
 }
 - (void)candidateListEnd:(IRimeCandidateListIterator *)iterator {
-  rime_get_api()->candidate_list_end([iterator rimeCandidateListIterator]);
+  api->candidate_list_end([iterator rimeCandidateListIterator]);
 }
 
 - (IRimeCandidateListIterator *)candidateListFromIndex:(IRimeSessionId)session
                                                  index:(int)index {
   RimeSessionId sessionId = (RimeSessionId)session;
   RimeCandidateListIterator iterator = {0};
-  if (rime_get_api()->candidate_list_from_index(sessionId, &iterator, index) == True) {
-    return [[IRimeCandidateListIterator alloc] initWithIterator: &iterator];
+  if (api->candidate_list_from_index(sessionId, &iterator, index) == True) {
+    return [[IRimeCandidateListIterator alloc] initWithIterator:&iterator];
   }
   return nil;
 }
@@ -900,26 +906,24 @@ static void rimeNotificationHandler(void *context_object,
            option:(NSString *)option
             value:(BOOL)value {
   RimeSessionId sessionId = (RimeSessionId)session;
-  rime_get_api()->set_option(sessionId, [option UTF8String],
-                             value ? True : False);
+  api->set_option(sessionId, [option UTF8String], value ? True : False);
 }
 - (BOOL)getOption:(IRimeSessionId)session option:(NSString *)option {
   RimeSessionId sessionId = (RimeSessionId)session;
-  return rime_get_api()->get_option(sessionId, [option UTF8String]) == True;
+  return api->get_option(sessionId, [option UTF8String]) == True;
 }
 
 - (void)setProperty:(IRimeSessionId)session
                prop:(NSString *)prop
               value:(NSString *)value {
   RimeSessionId sessionId = (RimeSessionId)session;
-  rime_get_api()->set_property(sessionId, [prop UTF8String],
-                               [value UTF8String]);
+  api->set_property(sessionId, [prop UTF8String], [value UTF8String]);
 }
 - (NSString *)getProperty:(IRimeSessionId)session prop:(NSString *)prop {
   char value[256];
   value[sizeof value - 1] = 0; // Compliant Solution: might silently truncate,
-  if (rime_get_api()->get_property(session, [prop UTF8String], value,
-                                   sizeof(value)) == True) {
+  if (api->get_property(session, [prop UTF8String], value, sizeof(value)) ==
+      True) {
     return [NSString stringWithUTF8String:value];
   }
   return nil;
@@ -927,21 +931,21 @@ static void rimeNotificationHandler(void *context_object,
 
 - (IRimeSchemaList *)getSchemaList {
   RimeSchemaList list;
-  if (rime_get_api()->get_schema_list(&list) == True) {
-    return [[IRimeSchemaList alloc] initWithSchemaList: &list];
+  if (api->get_schema_list(&list) == True) {
+    return [[IRimeSchemaList alloc] initWithSchemaList:&list];
   }
   return nil;
 }
 
 - (void)freeSchemaList:(IRimeSchemaList *)list {
-  rime_get_api()->free_schema_list([list schemalist]);
+  api->free_schema_list([list schemalist]);
 }
 
 - (NSString *)getCurrentSchema:(IRimeSessionId)session {
   RimeSessionId sessionId = (RimeSessionId)session;
   NSLog(@"session = %lu", sessionId);
   char current[100] = {0};
-  if (rime_get_api()->get_current_schema(sessionId, current, sizeof(current))) {
+  if (api->get_current_schema(sessionId, current, sizeof(current))) {
     NSLog(@"current schema = %s", current);
     return [NSString stringWithUTF8String:current];
   }
@@ -950,7 +954,7 @@ static void rimeNotificationHandler(void *context_object,
 
 - (BOOL)selectSchema:(IRimeSessionId)session schemeId:(NSString *)schema {
   RimeSessionId sessionId = (RimeSessionId)session;
-  return rime_get_api()->select_schema(sessionId, [schema UTF8String]) == True;
+  return api->select_schema(sessionId, [schema UTF8String]) == True;
 }
 
 // Configuration
@@ -1012,17 +1016,16 @@ static void rimeNotificationHandler(void *context_object,
 - (BOOL)simulateKeySequence:(IRimeSessionId)session
                 keySequence:(NSString *)sequence {
   RimeSessionId sessionId = (RimeSessionId)session;
-  return rime_get_api()->simulate_key_sequence(sessionId,
-                                               [sequence UTF8String]) == True;
+  return api->simulate_key_sequence(sessionId, [sequence UTF8String]) == True;
 }
 
 // Module
 
 - (BOOL)registerModule:(IRimeModule *)module {
-  rime_get_api()->register_module([module module]);
+  api->register_module([module module]);
 }
 - (IRimeModule *)findModule:(NSString *)moduleName {
-  RimeModule *module = rime_get_api()->find_module([moduleName UTF8String]);
+  RimeModule *module = api->find_module([moduleName UTF8String]);
   return [[IRimeModule alloc] initWithModule:module];
 }
 //
@@ -1030,16 +1033,16 @@ static void rimeNotificationHandler(void *context_object,
 //- (BOOL) runTask:(NSString *) task_name;
 //
 - (NSString *)getSharedDataDir {
-  return [NSString stringWithUTF8String:rime_get_api()->get_shared_data_dir()];
+  return [NSString stringWithUTF8String:api->get_shared_data_dir()];
 }
 - (NSString *)getUserDataDir {
-  return [NSString stringWithUTF8String:rime_get_api()->get_user_data_dir()];
+  return [NSString stringWithUTF8String:rime_get_api() -> get_user_data_dir()];
 }
 - (NSString *)getSyncDir {
-  return [NSString stringWithUTF8String:rime_get_api()->get_sync_dir()];
+  return [NSString stringWithUTF8String:api->get_sync_dir()];
 }
 - (NSString *)getUserId {
-  return [NSString stringWithUTF8String:rime_get_api()->get_user_id()];
+  return [NSString stringWithUTF8String:api->get_user_id()];
 }
 
 @end

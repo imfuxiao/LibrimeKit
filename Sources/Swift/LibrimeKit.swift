@@ -22,11 +22,9 @@ public enum KeySymbol: Int {
 public final class RimeKit {
   public static let shared: RimeKit = .init()
 
-  private var engine: RimeAPI
+  private let engine: IRimeAPI = IRimeAPI()
 
-  private init() {
-    engine = RimeAPI()
-  }
+  private init() { }
 
   // NOTE: startService 前需要请先设置通知委托
   public func setNotificationDelegate(_ delegate: IRimeNotificationDelegate) {
@@ -35,13 +33,9 @@ public final class RimeKit {
 
   public func startService(_ traits: IRimeTraits) {
     engine.setup(traits)
-    
-
     if engine.startMaintenance(true) {
       engine.joinMaintenanceThread()
     }
-    
-    // TODO: 只有修改配置的时候才需要调用 instialize 方法
     engine.initialize(traits)
   }
 
@@ -91,7 +85,7 @@ public final class RimeKit {
     let iterator = engine.candidateListBegin(session)
     if let rimeIterator = iterator {
       while engine.candidateListNext(rimeIterator) {
-//        result.append(rimeIterator.)
+        result.append(rimeIterator.candidate().text())
       }
       engine.candidateListEnd(rimeIterator)
     }
@@ -108,10 +102,9 @@ public final class RimeKit {
     guard let commit = engine.getCommit(session) else {
       return ""
     }
-//    let text = commit.text() ?? ""
-//    engine.freeCommit(commit)
-//    return text
-    return ""
+    let text = commit.text() ?? ""
+    _ = engine.freeCommit(commit)
+    return text
   }
 
   public func getStatus(_ session: IRimeSessionId) -> RimeInputStatus? {
@@ -160,6 +153,10 @@ public final class RimeKit {
   public func printSchemaList() {
     guard let list = engine.getSchemaList() else {
       return
+    }
+    list.list().forEach {
+      print($0.schemaId())
+      print($0.name())
     }
     engine.freeSchemaList(list)
   }
