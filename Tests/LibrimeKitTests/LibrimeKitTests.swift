@@ -1,7 +1,7 @@
 @testable import LibrimeKit
 import XCTest
 
-class TestRimeNotification: IRimeNotificationDelegate {
+class TestRimeNotification: NotifactionDelegate {
   func onDelployStart() {
     print("TestRimeNotification: onDelployStart")
   }
@@ -15,11 +15,11 @@ class TestRimeNotification: IRimeNotificationDelegate {
   }
     
   func onChangeMode(_ mode: String) {
-    print("TestRimeNotification: onChangeMode, mode: %s", mode)
+    print("TestRimeNotification: onChangeMode, mode: ", mode)
   }
     
   func onLoadingSchema(_ schema: String) {
-    print("TestRimeNotification: onLoadingSchema, schema: %s", schema)
+    print("TestRimeNotification: onLoadingSchema, schema: ", schema)
   }
 }
 
@@ -50,6 +50,7 @@ final class RimeKitTests: XCTestCase {
   
   // 同步bundle资源到临时文件夹
   static func syncRimeConfigFile() throws {
+    print("temp rime directory: ", tempRimeDir);
     // 创建临时文件夹
     var isDirectory = ObjCBool(true)
     if FileManager.default.fileExists(atPath: tempRimeDir.path, isDirectory: &isDirectory) {
@@ -78,6 +79,7 @@ final class RimeKitTests: XCTestCase {
     traits.sharedDataDir = Self.dstSharedSupportURL.path
     traits.userDataDir = Self.dstUserURL.path
     traits.appName = "rime.squirrel"
+    traits.modules = ["default", "lua"]
     traits.distributionCodeName = "Squirrel"
     traits.distributionName = "鼠鬚管"
     
@@ -85,77 +87,6 @@ final class RimeKitTests: XCTestCase {
     RimeKit.shared.startService(traits)
     
     print("Rime Ready...")
-    
-    print(RimeKit.shared.getUserDataDir())
-    print(RimeKit.shared.getSharedSupportDir())
-        
-    // 打印前方案列表
-    RimeKit.shared.printSchemaList()
-        
-    let session = RimeKit.shared.createSession()
-    print("session_id = ", session)
-    if session == 0 {
-      print("Error creating rime session.")
-      return
-    }
-        
-    let currentSchema = RimeKit.shared.getCurrentSchema(session)
-    print("current schema \(currentSchema)")
-        
-//        print("selecct schema ", RimeKit.shared.selectSchema(session, schemaId: "clover"))
-        
-//        currentSchema = RimeKit.shared.getCurrentSchema(session)
-//        print("current schema \(currentSchema)")
-    let
-//        print("prebuild all schema ", RimeKit.shared.prebuildAllSchemas())
-//        print("deploy workspace ", RimeKit.shared.deployWorkspace())
-        
-      // input: W
-      // rimeStatus =  is_ascii_mode: 0, is_composing: 0, is_ascii_punct: 1, is_disabled: 0, is_full_shape: 0, is_simplified: 0, is_traditional: 0, schema_id: flypy, schema_name: 小鹤音形
-      // input: w
-      // rimeStatus =  is_ascii_mode: 0, is_composing: 1, is_ascii_punct: 1, is_disabled: 0, is_full_shape: 0, is_simplified: 0, is_traditional: 0, schema_id: flypy, schema_name: 小鹤音形
-      // input: ww
-      // rimeStatus =  is_ascii_mode: 0, is_composing: 1, is_ascii_punct: 1, is_disabled: 0, is_full_shape: 0, is_simplified: 0, is_traditional: 0, schema_id: flypy, schema_name: 小鹤音形
-      // input: www
-      // rimeStatus =  is_ascii_mode: 0, is_composing: 1, is_ascii_punct: 1, is_disabled: 0, is_full_shape: 0, is_simplified: 0, is_traditional: 0, schema_id: flypy, schema_name: 小鹤音形
-      // input: wwww
-      // rimeStatus =  is_ascii_mode: 0, is_composing: 1, is_ascii_punct: 1, is_disabled: 0, is_full_shape: 0, is_simplified: 0, is_traditional: 0, schema_id: flypy, schema_name: 小鹤音形
-      // input: .
-      // rimeStatus =  is_ascii_mode: 0, is_composing: 0, is_ascii_punct: 1, is_disabled: 0, is_full_shape: 0, is_simplified: 0, is_traditional: 0, schema_id: flypy, schema_name: 小鹤音形
-        
-//    if !RimeKit.shared.simulateKeySequence(session, input: "orq") {
-//      print("Error simulateKeySequence call.")
-//      return
-//    }
-    
-      _ = RimeKit.shared.inputKeyForSession(session, keyCode: "o")
-    var candidateList = RimeKit.shared.candidateList(session)
-    for candidate in candidateList {
-      print("candidate: \(candidate)")
-    }
-    
-    _ = RimeKit.shared.inputKeyForSession(session, keyCode: "r")
-    candidateList = RimeKit.shared.candidateList(session)
-    for candidate in candidateList {
-      print("candidate: \(candidate)")
-    }
-    
-    _ = RimeKit.shared.inputKeyForSession(session, keyCode: "q")
-    
-    candidateList = RimeKit.shared.candidateList(session)
-    for candidate in candidateList {
-      print("candidate: \(candidate)")
-    }
-    
-    //
-    print("input = ", RimeKit.shared.getInput(session))
-    print("commit = ", RimeKit.shared.getCommit(session))
-    if let status = RimeKit.shared.getStatus(session) {
-      print("status = ", status)
-    }
-        
-    RimeKit.shared.printStatus(session)
-        
-    RimeKit.shared.stopService()
+    RimeKit.shared.debug()
   }
 }

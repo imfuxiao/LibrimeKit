@@ -55,7 +55,11 @@ let package = Package(
       name: "ObjCRime",
       dependencies: ["librime"],
       path: "Sources/ObjC",
-      cxxSettings: [.headerSearchPath("Sources/C")]),
+      cxxSettings: [.headerSearchPath("Sources/C")],
+      linkerSettings: [
+        .linkedLibrary("c++"),
+      ]
+    ),
     .target(
       name: "LibrimeKit",
       dependencies: [
