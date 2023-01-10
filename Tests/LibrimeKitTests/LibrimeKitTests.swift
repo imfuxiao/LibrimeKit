@@ -93,6 +93,7 @@ final class RimeKitTests: XCTestCase {
     var candidates = RimeKit.shared.inputKey("w");
     XCTAssertNotNil(candidates);
     XCTAssertEqual(candidates[0], "威")
+    XCTAssertEqual(RimeKit.shared.getInputKeys(), "www")
     RimeKit.shared.cleanComposition()
     
     // 繁体模式
@@ -101,6 +102,7 @@ final class RimeKitTests: XCTestCase {
     candidates = RimeKit.shared.inputKey("o")
     XCTAssertNotNil(candidates);
     XCTAssertEqual(candidates[0], "說")
+    XCTAssertEqual(RimeKit.shared.getInputKeys(), "uo")
     XCTAssertFalse(RimeKit.shared.isSimplifiedMode())
     RimeKit.shared.cleanComposition()
     
@@ -110,6 +112,7 @@ final class RimeKitTests: XCTestCase {
     candidates = RimeKit.shared.inputKey("o")
     XCTAssertNotNil(candidates);
     XCTAssertEqual(candidates[0], "说")
+    XCTAssertEqual(RimeKit.shared.getInputKeys(), "uo")
     XCTAssertTrue(RimeKit.shared.isSimplifiedMode())
     
     // ASCII 模式
