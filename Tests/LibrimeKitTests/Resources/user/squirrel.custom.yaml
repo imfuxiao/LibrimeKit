@@ -15,7 +15,7 @@ patch:
     border_width: 8                         # 窗口边界宽度，大于圆角半径才生效
     candidate_format: "%c\u2005%@\u2005"          # 用 1/6 em 空格 U+2005 来控制编号 %c 和候选词 %@ 前后的空间。
     corner_radius: 6                        # 窗口圆角半径
-    # hilited_corner_radius: 6                # 高亮圆角
+    #hilited_corner_radius: 6                # 高亮圆角
     hilited_text_color: 0x000000            # 编码高亮
     hilited_back_color: 0xffffff            # 编码背景高亮
     hilited_candidate_label_color: 0xeeeeee # 首选编号色
@@ -27,14 +27,13 @@ patch:
     candidate_back_color: 0xffffff                    # 次选背景色
     comment_text_color: 0x555555                      # 次选提示字母色
     horizontal: true                        # 候选窗横向显示
-    font_point: 26                          # 候选窗文字字号
+    font_point: 18                          # 候选窗文字字号
     label_font_point: 14                    # 候选窗编号字号
     inline_preedit: true                    # 开启嵌入编码
     name: "metro"
     text_color: 0x333333                    # 编码行文字颜色，24位色值，16进制，BGR顺序
-  "style/line_spacing": 22                  # 候选词的行间距
-  "style/color_scheme": solarized_rock
-  "style/display_tray_icon": true
+  "style/line_spacing": 12                  # 候选词的行间距
+  "style/color_scheme": metro
+  "style/display_tray_icon": false
   "style/text_orientation": horizontal  # horizontal | vertical
-  "style/font_point": 26          # 字号
   

@@ -70,23 +70,52 @@ final class RimeKitTests: XCTestCase {
     try FileManager.default.copyItem(at: userURL, to: dstUserURL)
   }
   
-  override func setUpWithError() throws {
-    try Self.syncRimeConfigFile()
-  }
-
-  func testRimeEngine() throws {
-    let traits = IRimeTraits()
+  static func startRime() {
+    let traits = RimeTraits()
     traits.sharedDataDir = Self.dstSharedSupportURL.path
     traits.userDataDir = Self.dstUserURL.path
-    traits.appName = "rime.squirrel"
-    traits.modules = ["default", "lua"]
-    traits.distributionCodeName = "Squirrel"
-    traits.distributionName = "鼠鬚管"
+    traits.appName = "rime.hamster"
+    traits.distributionCodeName = "Hamster"
+    traits.distributionName = "仓鼠"
     
     RimeKit.shared.setNotificationDelegate(TestRimeNotification())
     RimeKit.shared.startService(traits)
+  }
+  
+  override func setUpWithError() throws {
+    try Self.syncRimeConfigFile()
+    Self.startRime()
+  }
+  
+  func testInputKeys() throws {
+    _ = RimeKit.shared.inputKey("w");
+    _ = RimeKit.shared.inputKey("w");
+    var candidates = RimeKit.shared.inputKey("w");
+    XCTAssertNotNil(candidates);
+    XCTAssertEqual(candidates[0], "威")
+    RimeKit.shared.cleanComposition()
     
-    print("Rime Ready...")
-    RimeKit.shared.debug()
+    // 繁体模式
+    RimeKit.shared.traditionalMode(true)
+    _ = RimeKit.shared.inputKey("u")
+    candidates = RimeKit.shared.inputKey("o")
+    XCTAssertNotNil(candidates);
+    XCTAssertEqual(candidates[0], "說")
+    XCTAssertFalse(RimeKit.shared.isSimplifiedMode())
+    RimeKit.shared.cleanComposition()
+    
+    // 简体模式
+    RimeKit.shared.traditionalMode(false)
+    _ = RimeKit.shared.inputKey("u")
+    candidates = RimeKit.shared.inputKey("o")
+    XCTAssertNotNil(candidates);
+    XCTAssertEqual(candidates[0], "说")
+    XCTAssertTrue(RimeKit.shared.isSimplifiedMode())
+    
+    // ASCII 模式
+    RimeKit.shared.asciiMode(true)
+    XCTAssertTrue(RimeKit.shared.isAsciiMode())
+    RimeKit.shared.asciiMode(false)
+    XCTAssertFalse(RimeKit.shared.isAsciiMode())
   }
 }

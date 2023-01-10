@@ -3,7 +3,7 @@
 
 config_version: '0.37'
 
-us_keyboard_layout: false
+us_keyboard_layout: true
 
 # for veteran chord-typist
 chord_duration: 0.1  # seconds
@@ -326,34 +326,47 @@ preset_color_schemes:
     hilited_comment_text_color: 0x8144C2 #Lab 50, 65, -5
     hilited_text_color: 0x2C8BAE #Lab 60, 10, 65
 
-# 获取 app 名示例：osascript -e 'id of app "Finder"'
-# ascii_mode: true  # 初始爲西文模式
-# no_inline: true   # 不使用行內編輯
-# vim_mode: true    # 退出VIM插入模式自動切換輸入法狀態
 app_options:
-  com.apple.finder:
-    ascii_mode: true
-  com.apple.dt.Xcode:
-    ascii_mode: true
   com.apple.Spotlight:
+    ascii_mode: true
+  com.alfredapp.Alfred:
+    ascii_mode: true
+  com.runningwithcrayons.Alfred-2:
+    ascii_mode: true
+  com.blacktree.Quicksilver:
     ascii_mode: true
   com.apple.Terminal:
     ascii_mode: true
     no_inline: true
-  com.apple.Safari:
-    ascii_mode: true
-  com.runningwithcrayons.Alfred:
-    ascii_mode: true
   com.googlecode.iterm2:
     ascii_mode: true
     no_inline: true
+  org.vim.MacVim:
+    ascii_mode: true  # 初始爲西文模式
+    no_inline: true   # 不使用行內編輯
+    vim_mode: true    # 退出VIM插入模式自動切換輸入法狀態
+  com.apple.dt.Xcode:
+    ascii_mode: true
+  com.barebones.textwrangler:
+    ascii_mode: true
+  com.macromates.TextMate.preview:
+    ascii_mode: true
+  com.github.atom:
+    ascii_mode: true
   com.microsoft.VSCode:
     ascii_mode: true
+  com.sublimetext.2:
+    ascii_mode: true
+  org.gnu.Aquamacs:
+    ascii_mode: true
+  org.gnu.Emacs:
+    ascii_mode: true
+    no_inline: true
+  co.zeit.hyper:
+    ascii_mode: true
   com.google.Chrome:
-    ascii_mode: true
-  com.youdao.YoudaoDict:
-    ascii_mode: true
-  com.kapeli.dashdoc:
-    ascii_mode: true
-
-
+    # 規避 https://github.com/rime/squirrel/issues/435
+    inline: true
+  ru.keepcoder.Telegram:
+    # 規避 https://github.com/rime/squirrel/issues/475
+    inline: true

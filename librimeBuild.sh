@@ -18,6 +18,7 @@ fi
 # install lua plugin
 # TODO: 这里是临时解决方案. 非librime官方方法.
 # 可能是个人能力问题, 使用官方的方法始终无法加载lua模块. 临时使用此方法. 希望以后可以解决这个问题.
+# 注意: 改写代码后发现 gear 模块也无法加载. 所以代码中同时将gear模块添加进去.
 rm -rf ${RIME_ROOT}/librime/plugins/lua
 ${RIME_ROOT}/librime/install-plugins.sh imfuxiao/librime-lua@main
 rm -rf ${RIME_ROOT}/librime/src/rime/lua && \
@@ -27,6 +28,7 @@ rm -rf ${RIME_ROOT}/librime/src/rime/lua && \
   
 # TODO: begin 改写文件内容
 cat << "MODULE" | tee ${RIME_ROOT}/librime/src/rime/core_module.cc
+
 //
 // Copyright RIME Developers
 // Distributed under the BSD License
@@ -44,11 +46,36 @@ cat << "MODULE" | tee ${RIME_ROOT}/librime/src/rime/core_module.cc
 #include <rime/schema.h>
 
 #include <cstdio>
-#include <rime/common.h>
-#include <rime/registry.h>
-#include <rime_api.h>
 #include "lua/lib/lua_templates.h"
 #include "lua/lua_gears.h"
+
+#include <rime/gear/abc_segmentor.h>
+#include <rime/gear/affix_segmentor.h>
+#include <rime/gear/ascii_composer.h>
+#include <rime/gear/ascii_segmentor.h>
+#include <rime/gear/charset_filter.h>
+#include <rime/gear/chord_composer.h>
+#include <rime/gear/echo_translator.h>
+#include <rime/gear/editor.h>
+#include <rime/gear/fallback_segmentor.h>
+#include <rime/gear/history_translator.h>
+#include <rime/gear/key_binder.h>
+#include <rime/gear/matcher.h>
+#include <rime/gear/navigator.h>
+#include <rime/gear/punctuator.h>
+#include <rime/gear/recognizer.h>
+#include <rime/gear/reverse_lookup_filter.h>
+#include <rime/gear/reverse_lookup_translator.h>
+#include <rime/gear/schema_list_translator.h>
+#include <rime/gear/script_translator.h>
+#include <rime/gear/selector.h>
+#include <rime/gear/shape.h>
+#include <rime/gear/simplifier.h>
+#include <rime/gear/single_char_filter.h>
+#include <rime/gear/speller.h>
+#include <rime/gear/switch_translator.h>
+#include <rime/gear/table_translator.h>
+#include <rime/gear/uniquifier.h>
 
 void types_init(lua_State *L);
 
@@ -105,7 +132,6 @@ static void lua_init(lua_State *L) {
   }
 }
 
-
 using namespace rime;
 static void rime_core_initialize() {
   LOG(INFO) << "registering core components.";
@@ -134,6 +160,54 @@ static void rime_core_initialize() {
           });
   r.Register("user_config", user_config);
 
+  LOG(INFO) << "registering components from module 'gears'.";
+
+  // processors
+  r.Register("ascii_composer", new Component<AsciiComposer>);
+  r.Register("chord_composer", new Component<ChordComposer>);
+  r.Register("express_editor", new Component<ExpressEditor>);
+  r.Register("fluid_editor", new Component<FluidEditor>);
+  r.Register("fluency_editor", new Component<FluidEditor>);  // alias
+  r.Register("key_binder", new Component<KeyBinder>);
+  r.Register("navigator", new Component<Navigator>);
+  r.Register("punctuator", new Component<Punctuator>);
+  r.Register("recognizer", new Component<Recognizer>);
+  r.Register("selector", new Component<Selector>);
+  r.Register("speller", new Component<Speller>);
+  r.Register("shape_processor", new Component<ShapeProcessor>);
+
+  // segmentors
+  r.Register("abc_segmentor", new Component<AbcSegmentor>);
+  r.Register("affix_segmentor", new Component<AffixSegmentor>);
+  r.Register("ascii_segmentor", new Component<AsciiSegmentor>);
+  r.Register("matcher", new Component<Matcher>);
+  r.Register("punct_segmentor", new Component<PunctSegmentor>);
+  r.Register("fallback_segmentor", new Component<FallbackSegmentor>);
+
+  // translators
+  r.Register("echo_translator", new Component<EchoTranslator>);
+  r.Register("punct_translator", new Component<PunctTranslator>);
+  r.Register("table_translator", new Component<TableTranslator>);
+  r.Register("script_translator", new Component<ScriptTranslator>);
+  r.Register("r10n_translator", new Component<ScriptTranslator>);  // alias
+  r.Register("reverse_lookup_translator",
+             new Component<ReverseLookupTranslator>);
+  r.Register("schema_list_translator", new Component<SchemaListTranslator>);
+  r.Register("switch_translator", new Component<SwitchTranslator>);
+  r.Register("history_translator", new Component<HistoryTranslator>);
+
+  // filters
+  r.Register("simplifier", new Component<Simplifier>);
+  r.Register("uniquifier", new Component<Uniquifier>);
+  if (!r.Find("charset_filter")) {  // allow improved implementation
+    r.Register("charset_filter", new Component<CharsetFilter>);
+  }
+  r.Register("cjk_minifier", new Component<CharsetFilter>);  // alias
+  r.Register("reverse_lookup_filter", new Component<ReverseLookupFilter>);
+  r.Register("single_char_filter", new Component<SingleCharFilter>);
+
+  // formatters
+  r.Register("shape_formatter", new Component<ShapeFormatter>);
 
   LOG(INFO) << "registering components from module 'lua'.";
 
@@ -151,6 +225,8 @@ static void rime_core_finalize() {
 }
 
 RIME_REGISTER_MODULE(core)
+
+
 MODULE
 
 
