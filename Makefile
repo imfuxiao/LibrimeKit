@@ -1,24 +1,38 @@
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 mkfile_dir := $(dir $(mkfile_path))
 
-.PHONY: boost-build boost-clean librime-build librime-clean
+COCOAPODS_EXISTS:=$(shell gem list -i cocoapods)
 
-boost-build:
+BOOST_FRAMEWORK_PATH=boost-iosx/frameworks
+
+.PHONY: cocoapads boost-build boost-clean librime-check librime-build librime-clean
+
+cocoapods:
+	$(info gem cocoapads check)
+ifeq ($(COCOAPODS_EXISTS), true)
+	$(info cocoapads installed)
+else
+	$(info need install cocoapads)
 	sudo gem install cocoapods
-	${MAKE} -f boost-iosx/Makefile build
-	cd ${mkfile_dir} && 
-		mkdir -p Frameworks && \
-		cp -rf boost-iosx/frameworks/boost_atomic.xcframework Frameworks && \
-		cp -rf boost-iosx/frameworks/boost_filesystem.xcframework Frameworks && \
-		cp -rf boost-iosx/frameworks/boost_regex.xcframework Frameworks && \
-		cp -rf boost-iosx/frameworks/boost_system.xcframework Frameworks
+endif
+
+boost-build: cocoapods
+	$(info boost build begin)
+	${MAKE} -C boost-iosx build
+	mkdir -p Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_atomic.xcframework Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_filesystem.xcframework Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_regex.xcframework Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_system.xcframework Frameworks
 
 boost-clean:
-	${MAKE} -f boost-iosx/Makefile clean
+	${MAKE} -C boost-iosx clean
 
-librime-build:
+librime-check:
 	# brew install cmake
-	# git submodule update --init
+	@[ -f `which cmake` ] || { echo "Install cmake first"; exit 1; }
+
+librime-build: librime-check
 	${mkfile_dir}/librimeBuild.sh
 
 librime-clean:
