@@ -190,7 +190,12 @@ const NSString *simplifiedMode = @"simplification";
   RimeFinalize();
 }
 
-// MARK: test method
+- (BOOL)isAlive {
+  if (session && RimeFindSession(session)) {
+    return true;
+  }
+  return false;
+}
 
 - (RimeSessionId)session {
   if (session && RimeFindSession(session)) {

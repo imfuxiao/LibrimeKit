@@ -36,6 +36,7 @@
 - (void)setup:(IRimeTraits *)traits;
 - (void)start:(IRimeTraits *)traits WithFullCheck:(BOOL)check;
 - (void)shutdown;
+- (BOOL)isAlive;
 
 // MARK: input and output
 - (BOOL)processKey:(NSString *)keyCode;

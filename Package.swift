@@ -52,18 +52,9 @@ let package = Package(
       name: "libyaml-cpp",
       path: "Frameworks/libyaml-cpp.xcframework"),
     .target(
-      name: "ObjCRime",
-      dependencies: ["librime"],
-      path: "Sources/ObjC",
-      cxxSettings: [.headerSearchPath("Sources/C")],
-      linkerSettings: [
-        .linkedLibrary("c++"),
-      ]
-    ),
-    .target(
       name: "LibrimeKit",
       dependencies: [
-        "ObjCRime",
+        "librime",
         "boost_atomic",
         "boost_filesystem",
         "boost_regex",
@@ -73,12 +64,32 @@ let package = Package(
         "libmarisa",
         "libopencc",
         "libyaml-cpp",
-        "librime",
       ],
-      path: "Sources/Swift",
+      path: "Sources/ObjC",
+      cxxSettings: [.headerSearchPath("Sources/C")],
       linkerSettings: [
         .linkedLibrary("c++"),
-      ]),
+      ]
+    ),
+//    .target(
+//      name: "LibrimeKit",
+//      dependencies: [
+//        "ObjCRime",
+//        "boost_atomic",
+//        "boost_filesystem",
+//        "boost_regex",
+//        "boost_system",
+//        "libglog",
+//        "libleveldb",
+//        "libmarisa",
+//        "libopencc",
+//        "libyaml-cpp",
+//        "librime",
+//      ],
+//      path: "Sources/Swift",
+//      linkerSettings: [
+//        .linkedLibrary("c++"),
+//      ]),
     .testTarget(
       name: "LibrimeKitTests",
       dependencies: ["LibrimeKit"],

@@ -1,5 +1,5 @@
 import Foundation
-@_exported import ObjCRime
+@_exported import LibrimeKit
 
 public class RimeTraits: IRimeTraits {}
 
@@ -17,13 +17,16 @@ public final class RimeKit {
   }
 
   public func startService(_ traits: RimeTraits) {
+    if rimeAPI.isAlive() {
+      return
+    }
     rimeAPI.startRimeServer(traits)
   }
 
   public func stopService() {
     rimeAPI.shutdown()
   }
-
+  
   public func inputKey(_ key: String) -> [String] {
     if rimeAPI.processKey(key) {
       return []
