@@ -1,4 +1,4 @@
-@testable import LibrimeKit
+@testable @_exported import LibrimeKit
 import XCTest
 
 class TestRimeNotification: NotifactionDelegate {
@@ -50,7 +50,7 @@ final class RimeKitTests: XCTestCase {
   
   // 同步bundle资源到临时文件夹
   static func syncRimeConfigFile() throws {
-    print("temp rime directory: ", tempRimeDir);
+    print("temp rime directory: ", tempRimeDir)
     // 创建临时文件夹
     var isDirectory = ObjCBool(true)
     if FileManager.default.fileExists(atPath: tempRimeDir.path, isDirectory: &isDirectory) {
@@ -78,8 +78,8 @@ final class RimeKitTests: XCTestCase {
     traits.distributionCodeName = "Hamster"
     traits.distributionName = "仓鼠"
     
-    RimeKit.shared.setNotificationDelegate(TestRimeNotification())
-    RimeKit.shared.startService(traits)
+    RimeEngine.shared.setNotificationDelegate(TestRimeNotification())
+    RimeEngine.shared.startService(traits)
   }
   
   override func setUpWithError() throws {
@@ -87,35 +87,69 @@ final class RimeKitTests: XCTestCase {
     Self.startRime()
   }
   
+  func testCandidateWithIndexAndCount() throws {
+    _ = RimeEngine.shared.inputKey("w")
+    _ = RimeEngine.shared.inputKey(KeySymbol.QuoteLeft.rawValue)
+    let context = RimeEngine.shared.context()
+    print(context)
+    var count = 5
+    for i in 0 ..< context.pageSize {
+      // TODO
+      let candidates = RimeEngine.shared.candidateWithIndexAndCount(index: count * Int(i), count: count)
+      print(candidates)
+    }
+  }
+  
+  func testContext() throws {
+    _ = RimeEngine.shared.inputKey("w")
+    _ = RimeEngine.shared.inputKey(KeySymbol.QuoteLeft.rawValue)
+    var context = RimeEngine.shared.context()
+    print(context)
+    // 发射分页键
+    _ = RimeEngine.shared.inputKey(KeySymbol.BracketLeft.rawValue)
+    context = RimeEngine.shared.context()
+    print(context)
+  }
+  
+  func testPrintContext() throws {
+    _ = RimeEngine.shared.inputKey("w")
+    _ = RimeEngine.shared.inputKey(KeySymbol.QuoteLeft.rawValue)
+    RimeEngine.shared.printContext()
+  }
+  
   func testInputKeys() throws {
-    _ = RimeKit.shared.inputKey("w");
-    _ = RimeKit.shared.inputKey("w");
-    var candidates = RimeKit.shared.inputKey("w");
-    XCTAssertNotNil(candidates);
-    XCTAssertEqual(candidates[0], "威")
-    RimeKit.shared.cleanComposition()
+    _ = RimeEngine.shared.inputKey("w")
+    _ = RimeEngine.shared.inputKey("o")
+    _ = RimeEngine.shared.inputKey("r")
+    _ = RimeEngine.shared.inputKey(KeySymbol.QuoteLeft.rawValue)
+    var candidates = RimeEngine.shared.candidateList()
+    XCTAssertNotNil(candidates)
+    XCTAssertEqual(candidates[1].text, "偓")
+    RimeEngine.shared.cleanComposition()
     
     // 繁体模式
-    RimeKit.shared.traditionalMode(true)
-    _ = RimeKit.shared.inputKey("u")
-    candidates = RimeKit.shared.inputKey("o")
-    XCTAssertNotNil(candidates);
-    XCTAssertEqual(candidates[0], "說")
-    XCTAssertFalse(RimeKit.shared.isSimplifiedMode())
-    RimeKit.shared.cleanComposition()
+    RimeEngine.shared.traditionalMode(true)
+    _ = RimeEngine.shared.inputKey("u")
+    _ = RimeEngine.shared.inputKey("o")
+    candidates = RimeEngine.shared.candidateList()
+    XCTAssertNotNil(candidates)
+    XCTAssertEqual(candidates[0].text, "說")
+    XCTAssertFalse(RimeEngine.shared.isSimplifiedMode())
+    RimeEngine.shared.cleanComposition()
     
     // 简体模式
-    RimeKit.shared.traditionalMode(false)
-    _ = RimeKit.shared.inputKey("u")
-    candidates = RimeKit.shared.inputKey("o")
-    XCTAssertNotNil(candidates);
-    XCTAssertEqual(candidates[0], "说")
-    XCTAssertTrue(RimeKit.shared.isSimplifiedMode())
+    RimeEngine.shared.traditionalMode(false)
+    _ = RimeEngine.shared.inputKey("u")
+    _ = RimeEngine.shared.inputKey("o")
+    candidates = RimeEngine.shared.candidateList()
+    XCTAssertNotNil(candidates)
+    XCTAssertEqual(candidates[0].text, "说")
+    XCTAssertTrue(RimeEngine.shared.isSimplifiedMode())
     
     // ASCII 模式
-    RimeKit.shared.asciiMode(true)
-    XCTAssertTrue(RimeKit.shared.isAsciiMode())
-    RimeKit.shared.asciiMode(false)
-    XCTAssertFalse(RimeKit.shared.isAsciiMode())
+    RimeEngine.shared.asciiMode(true)
+    XCTAssertTrue(RimeEngine.shared.isAsciiMode())
+    RimeEngine.shared.asciiMode(false)
+    XCTAssertFalse(RimeEngine.shared.isAsciiMode())
   }
 }

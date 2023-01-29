@@ -123,6 +123,27 @@ static void rimeNotificationHandler(void *contextObject,
 
 @end
 
+@implementation IRimeStatus
+
+@synthesize schemaId, schemaName;
+@synthesize isASCIIMode, isASCIIPunct, isComposing, isDisabled, isFullShape,
+isSimplified, isTraditional;
+
+@end
+
+@implementation IRimeCandidate
+
+@synthesize text, comment;
+
+@end
+
+@implementation IRimeContext
+
+@synthesize pageNo, pageSize, isLastPage;
+@synthesize candidates;
+
+@end
+
 const NSString *asciiMode = @"ascii_mode";
 const NSString *simplifiedMode = @"simplification";
 
@@ -139,6 +160,7 @@ const NSString *simplifiedMode = @"simplification";
 - (void)startRimeServer:(IRimeTraits *)traits {
   [self setup:traits];
   [self start:traits WithFullCheck:true];
+  [self session];
 }
 
 - (void)setup:(IRimeTraits *)traits {
@@ -242,18 +264,18 @@ const NSString *simplifiedMode = @"simplification";
 }
 
 - (BOOL)processKey:(NSString *)keyCode {
-  [self processKey:keyCode modifiers:0];
-}
-
-- (BOOL)processKey:(NSString *)keyCode modifiers:(int)modifier {
   @autoreleasepool {
     const char *code = [keyCode UTF8String][0];
     // TODO: code转换
-    return RimeProcessKey([self session], code, modifier);
+    return RimeProcessKey([self session], code, 0);
   }
 }
 
-- (NSArray<NSString *> *)candidateList {
+- (BOOL)processKeyCode:(int)code {
+  return RimeProcessKey([self session], code, 0);
+}
+
+- (NSArray<IRimeCandidate *> *)getCandidateList {
   @autoreleasepool {
     RimeCandidateListIterator iterator = {0};
     if (!RimeCandidateListBegin(session, &iterator)) {
@@ -262,16 +284,48 @@ const NSString *simplifiedMode = @"simplification";
 #endif
       return nil;
     }
-    NSMutableArray<NSString *> *list = [NSMutableArray array];
+    
+    NSMutableArray<IRimeCandidate *> *list = [NSMutableArray array];
     while (RimeCandidateListNext(&iterator)) {
-#if DEBUG
-      NSLog(@"candidate text: %s, comment: %s", iterator.candidate.text,
-            iterator.candidate.comment);
-#endif
-      [list addObject:@(iterator.candidate.text)];
+      IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
+      [candidate setText:@(iterator.candidate.text)];
+      [candidate setComment:iterator.candidate.comment
+       ? @(iterator.candidate.comment)
+                           : @""];
+      [list addObject:candidate];
     }
     RimeCandidateListEnd(&iterator);
     return [NSArray arrayWithArray:list];
+  }
+}
+
+- (NSArray<IRimeCandidate *> *)getCandidateWithIndex:(int)index
+                                            andCount:(int)count {
+  @autoreleasepool {
+    RimeCandidateListIterator iterator = {0};
+    if (!RimeCandidateListFromIndex(session, &iterator, index)) {
+#if DEBUG
+      NSLog(@"get candidate list error");
+#endif
+      return nil;
+    }
+    
+    NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
+    int maxIndex = index + count;
+    while (RimeCandidateListNext(&iterator)) {
+      if (iterator.index >= maxIndex) {
+        break;
+      }
+      
+      IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
+      [candidate setText:@(iterator.candidate.text)];
+      [candidate setComment:iterator.candidate.comment
+       ? @(iterator.candidate.comment)
+                           : @""];
+      [candidates addObject:candidate];
+    }
+    RimeCandidateListEnd(&iterator);
+    return [NSArray arrayWithArray:candidates];
   }
 }
 
@@ -297,13 +351,60 @@ const NSString *simplifiedMode = @"simplification";
 - (NSString *)getCommit {
   @autoreleasepool {
     RIME_STRUCT(RimeCommit, rimeCommit);
-    if (!RimeGetCommit([self session], &rimeCommit)) {
-      return nil;
+    if (!RimeGetCommit(session, &rimeCommit)) {
+      return @"";
     }
-    NSString *commitText = @(rimeCommit.text);
+    NSString *commitText = rimeCommit.text ? @(rimeCommit.text) : @"";
     RimeFreeCommit(&rimeCommit);
     return commitText;
   }
+}
+
+- (IRimeStatus *)getStatus {
+  IRimeStatus *status = [[IRimeStatus alloc] init];
+  @autoreleasepool {
+    RIME_STRUCT(RimeStatus, rimeStatus);
+    if (RimeGetStatus(session, &rimeStatus)) {
+      [status setSchemaId:@(rimeStatus.schema_id)];
+      [status setSchemaName:@(rimeStatus.schema_name)];
+      [status setIsASCIIMode:rimeStatus.is_ascii_mode > 0];
+      [status setIsASCIIPunct:rimeStatus.is_ascii_punct > 0];
+      [status setIsComposing:rimeStatus.is_composing > 0];
+      [status setIsDisabled:rimeStatus.is_disabled > 0];
+      [status setIsFullShape:rimeStatus.is_full_shape > 0];
+      [status setIsSimplified:rimeStatus.is_simplified > 0];
+      [status setIsTraditional:rimeStatus.is_traditional > 0];
+    }
+    RimeFreeStatus(&rimeStatus);
+  }
+  return status;
+}
+
+- (IRimeContext *)getContext {
+  IRimeContext *context = [[IRimeContext alloc] init];
+  
+  @autoreleasepool {
+    RIME_STRUCT(RimeContext, ctx);
+    if (!RimeGetContext(session, &ctx)) {
+      return context;
+    }
+    
+    [context setPageNo:ctx.menu.page_no];
+    [context setPageSize:ctx.menu.page_size];
+    [context setIsLastPage:ctx.menu.is_last_page];
+    
+    NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
+    for (int i = 0; i < ctx.menu.num_candidates; i++) {
+      IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
+      [candidate setText:@(ctx.menu.candidates[i].text)];
+      [candidate setComment:ctx.menu.candidates[i].comment
+       ? @(ctx.menu.candidates[i].comment)
+                           : @""];
+      [candidates addObject:candidate];
+    }
+    [context setCandidates:[NSArray arrayWithArray:candidates]];
+  }
+  return context;
 }
 
 - (BOOL)isAsciiMode {
@@ -340,12 +441,24 @@ const NSString *simplifiedMode = @"simplification";
       // update preedit text
       const char *preedit = ctx.composition.preedit;
       NSString *preeditText = preedit ? @(preedit) : @"";
-      NSLog(@"context preeidt text: %@", preeditText);
+      // input character
+      NSLog(@"context input character: %@", preeditText);
       
       const char *candidatePreview = ctx.commit_text_preview;
       NSString *candidatePreviewText =
       candidatePreview ? @(candidatePreview) : @"";
+      // get first candidate by rime engine
       NSLog(@"candidate preview text: %@", candidatePreviewText);
+      
+      NSLog(@"ctx data size: %d", ctx.data_size);
+      
+      NSLog(@"context compostion start = %d, end = %d, cursorPos = %d",
+            ctx.composition.sel_start, ctx.composition.sel_end,
+            ctx.composition.cursor_pos);
+      NSLog(@"context menu pageNo = %d, pageSize = %d, isLastPage = %@",
+            ctx.menu.page_no, ctx.menu.page_size,
+            ctx.menu.is_last_page ? @"true" : @"false");
+      NSLog(@"context menu selectKeys: %s", ctx.menu.select_keys);
       
       // update candidates
       NSMutableArray *candidates = [NSMutableArray array];
@@ -358,6 +471,8 @@ const NSString *simplifiedMode = @"simplification";
         } else {
           [comments addObject:@""];
         }
+        NSLog(@"candidate index = %ld, text = %@", i, candidates[i]);
+        NSLog(@"comments index = %ld, text = %@", i, comments[i]);
       }
       NSArray *labels;
       if (ctx.menu.select_keys) {

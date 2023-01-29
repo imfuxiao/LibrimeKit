@@ -66,35 +66,25 @@ let package = Package(
         "libyaml-cpp",
       ],
       path: "Sources/ObjC",
-      cxxSettings: [.headerSearchPath("Sources/C")],
+      cSettings: [
+        .headerSearchPath("Sources/C"),
+      ],
+      cxxSettings: [
+        .headerSearchPath("Sources/C"),
+        .unsafeFlags(["-DLEOPARD", "-DHAVE_CONFIG_H"]),
+      ],
       linkerSettings: [
         .linkedLibrary("c++"),
-      ]
-    ),
-//    .target(
-//      name: "LibrimeKit",
-//      dependencies: [
-//        "ObjCRime",
-//        "boost_atomic",
-//        "boost_filesystem",
-//        "boost_regex",
-//        "boost_system",
-//        "libglog",
-//        "libleveldb",
-//        "libmarisa",
-//        "libopencc",
-//        "libyaml-cpp",
-//        "librime",
-//      ],
-//      path: "Sources/Swift",
-//      linkerSettings: [
-//        .linkedLibrary("c++"),
-//      ]),
+        .linkedFramework("CoreFoundation"),
+      ]),
     .testTarget(
       name: "LibrimeKitTests",
       dependencies: ["LibrimeKit"],
       resources: [
         .copy("Resources/SharedSupport"),
         .copy("Resources/user"),
+      ],
+      swiftSettings: [
+        .unsafeFlags(["-enable-experimental-cxx-interop"]),
       ]),
   ])

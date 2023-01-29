@@ -23,9 +23,9 @@ extension Foundation.Bundle {
         continue
       }
       
-      #if DEBUG
+#if DEBUG
       print(candidate)
-      #endif
+#endif
       
       if !candidate.lastPathComponent.hasSuffix(".xctest") {
         continue
@@ -33,16 +33,16 @@ extension Foundation.Bundle {
       
       if #available(iOS 16.0, *) {
         if let bunder = Bundle(url: candidate.deletingLastPathComponent().appending(component: bundleName + ".bundle")) {
-          #if DEBUG
+#if DEBUG
           print(bunder.bundlePath)
-          #endif
+#endif
           return bunder
         }
       } else {
         if let bunder = Bundle(url: candidate.deletingLastPathComponent().appendingPathComponent(bundleName + ".bundle")) {
-          #if DEBUG
+#if DEBUG
           print(bunder.bundlePath)
-          #endif
+#endif
           return bunder
         }
       }
@@ -50,19 +50,4 @@ extension Foundation.Bundle {
     
     fatalError("unable to find bundle named \(bundleName)")
   }()
-  
-//  func copyItem(toPath dstPath: URL) throws {
-//    var sharedSupport: URL
-//    var user: URL
-//    if #available(iOS 16.0, *) {
-//      sharedSupport = self.bundleURL.appending(component: "SharedSupport")
-//      user = self.bundleURL.appending(component: "user")
-//    } else {
-//      sharedSupport = self.bundleURL.appendingPathComponent("SharedSupport")
-//      user = self.bundleURL.appendingPathComponent("user")
-//    }
-//
-//    try FileManager.default.copyItem(at: sharedSupport, to: dstPath)
-//    try FileManager.default.copyItem(at: user, to: dstPath)
-//  }
 }

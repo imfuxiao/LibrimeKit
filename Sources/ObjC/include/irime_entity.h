@@ -59,3 +59,49 @@
 - (id)initWithSchemaId:(NSString *)schemaId andSchemaName:(NSString *)name;
 
 @end
+
+@interface IRimeStatus : NSObject {
+  NSString *schemaId;
+  NSString *schemaName;
+  BOOL isASCIIMode;
+  BOOL isASCIIPunct;
+  BOOL isComposing;
+  BOOL isDisabled;
+  BOOL isFullShape;
+  BOOL isSimplified;
+  BOOL isTraditional;
+}
+
+@property NSString *schemaId;
+@property NSString *schemaName;
+@property BOOL isASCIIMode;
+@property BOOL isASCIIPunct;
+@property BOOL isComposing;
+@property BOOL isDisabled;
+@property BOOL isFullShape;
+@property BOOL isSimplified;
+@property BOOL isTraditional;
+
+@end
+
+@interface IRimeCandidate : NSObject {
+  NSString *text;
+  NSString *comment;
+}
+
+@property NSString *text;
+@property NSString *comment;
+
+@end
+
+@interface IRimeContext : NSObject {
+  int pageNo, pageSize;
+  BOOL isLastPage;
+  NSArray<IRimeCandidate *> *candidates;
+}
+
+@property int pageNo, pageSize;
+@property BOOL isLastPage;
+@property NSArray<IRimeCandidate *> *candidates;
+
+@end

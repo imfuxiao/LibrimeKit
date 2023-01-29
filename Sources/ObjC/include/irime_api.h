@@ -40,11 +40,16 @@
 
 // MARK: input and output
 - (BOOL)processKey:(NSString *)keyCode;
-- (NSArray<NSString *> *)candidateList;
+- (BOOL)processKeyCode:(int)code;
+- (NSArray<IRimeCandidate *> *)getCandidateList;
+- (NSArray<IRimeCandidate *> *)getCandidateWithIndex:(int)pageNo andCount:(int)limit;
+
 - (NSString *)getInput;
 - (NSString *)getCommit;
 - (BOOL)commitComposition;
 - (void)cleanComposition;
+- (IRimeStatus *)getStatus;
+- (IRimeContext *)getContext;
 
 // MARK: schema
 - (NSArray<Schema *> *)schemaList;
@@ -57,4 +62,6 @@
 - (void)asciiMode:(BOOL)value;
 - (void)simplification:(BOOL)value;
 
+// MARK: Debug
+- (void)printContext;
 @end
