@@ -71,7 +71,7 @@ let package = Package(
       ],
       cxxSettings: [
         .headerSearchPath("Sources/C"),
-        .unsafeFlags(["-DLEOPARD", "-DHAVE_CONFIG_H"]),
+//        .unsafeFlags(["-DLEOPARD", "-DHAVE_CONFIG_H"]),
       ],
       linkerSettings: [
         .linkedLibrary("c++"),
@@ -83,8 +83,9 @@ let package = Package(
       resources: [
         .copy("Resources/SharedSupport"),
         .copy("Resources/user"),
-      ],
-      swiftSettings: [
-        .unsafeFlags(["-enable-experimental-cxx-interop"]),
-      ]),
+      ]
+//      swiftSettings: [
+//        .unsafeFlags(["-enable-experimental-cxx-interop"]),
+//      ]
+    )
   ])
