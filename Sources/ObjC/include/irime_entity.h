@@ -48,7 +48,7 @@
 
 @end
 
-@interface Schema : NSObject {
+@interface IRimeSchema : NSObject {
   NSString *schemaId;
   NSString *schemaName;
 }
@@ -105,3 +105,30 @@
 @property NSArray<IRimeCandidate *> *candidates;
 
 @end
+
+@interface IRimeConfigIteratorItem : NSObject {
+  int index;
+  NSString *key;
+  NSString *path;
+}
+
+@property int index;
+@property NSString *key;
+@property NSString *path;
+
+@end
+
+
+@interface IRimeConfig : NSObject
+
+- (NSString *)getString:(NSString *)key;
+- (BOOL)getBool:(NSString *)key;
+- (int)getInt:(NSString *)key;
+- (double)getDouble:(NSString *)key;
+
+- (NSArray<IRimeConfigIteratorItem *> *)getItems:(NSString *)key;
+- (NSArray<IRimeConfigIteratorItem *> *)getMapValues:(NSString *)key;
+
+@end
+
+

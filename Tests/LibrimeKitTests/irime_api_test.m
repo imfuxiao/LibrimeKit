@@ -110,9 +110,15 @@ withIntermediateDirectories:TRUE
 }
 
 - (IRimeAPI *)startRime {
+  return [self startRime:[[self tempSharedSupportURL] path]
+             andUserPath:[[self tempUserURL] path]];
+}
+
+- (IRimeAPI *)startRime:(NSString *)sharedSupportPath
+            andUserPath:(NSString *)userPath {
   IRimeTraits *traits = [[IRimeTraits alloc] init];
-  [traits setSharedDataDir:[[self tempSharedSupportURL] path]];
-  [traits setUserDataDir:[[self tempUserURL] path]];
+  [traits setSharedDataDir:sharedSupportPath];
+  [traits setUserDataDir:userPath];
   [traits setAppName:@"rime.hamster"];
   [traits setDistributionName:@"仓鼠"];
   [traits setDistributionCodeName:@"Hamster"];
@@ -183,6 +189,62 @@ withIntermediateDirectories:TRUE
   XCTAssertFalse([api isAsciiMode]);
   [api asciiMode:TRUE];
   XCTAssertTrue([api isAsciiMode]);
+}
+
+- (void)testSchemaList {
+  IRimeAPI *api =
+  [self startRime:@"/Users/morse/Downloads/rimeTestResource/SharedSupport"
+      andUserPath:@"/Users/morse/Downloads/rimeTestResource/rime"];
+  NSArray<IRimeSchema *> *list = [api schemaList];
+  for (IRimeSchema *schema in list) {
+    NSLog(@"schemaName: %@, schemaId: %@", [schema schemaName],
+          [schema schemaId]);
+  }
+  IRimeSchema *currentSchema = [api currentSchema];
+  NSLog(@"current schemaName: %@, schemaId: %@", [currentSchema schemaName],
+        [currentSchema schemaId]);
+  
+  // 变更schema
+  //  XCTAssertTrue([api selectSchema:@"cangjie5"]);
+  //  currentSchema = [api currentSchema];
+  //  NSLog(@"current schemaName: %@, schemaId: %@", [currentSchema schemaName],
+  //        [currentSchema schemaId]);
+}
+
+- (void)testConfigValue {
+  IRimeAPI *api = [self startRime];
+  
+  IRimeConfig *schemaConfig = [api openSchema: @"flypy"];
+  XCTAssertNotNil(schemaConfig);
+  
+  NSString *value = [schemaConfig getString:@"schema/version"];
+  NSLog(@"schema/version: %@", value);
+  XCTAssertTrue([@"10.9.3" isEqual:value]);
+  
+  int historySize = [schemaConfig getInt:@"history/size"];
+  NSLog(@"history/size: %d", historySize);
+  XCTAssertTrue(historySize == 1);
+  
+  IRimeConfig *config = [api openConfig:@"squirrel"];
+  XCTAssertNotNil(config);
+  
+  BOOL usKeyboardLayout = [config getBool: @"us_keyboard_layout"];
+  XCTAssertTrue(usKeyboardLayout);
+  
+  double chordDuration = [config getDouble: @"chord_duration"];
+  XCTAssertTrue(chordDuration == 0.1);
+  
+  // 多重path使用/分隔
+  value = [config getString:@"style/color_scheme"];
+  NSLog(@"color_scheme: %@", value);
+  XCTAssertTrue([@"metro" isEqual:value], @"color_scheme is: %@", value);
+  
+  // 获取map值
+  NSArray<IRimeConfigIteratorItem *> *items = [config getMapValues:@"preset_color_schemes"];
+  XCTAssertNotNil(items);
+  for (IRimeConfigIteratorItem *item in items) {
+    NSLog(@"color schema: %@", item);
+  }
 }
 
 - (void)testPerformanceExample {

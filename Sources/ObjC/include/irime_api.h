@@ -52,8 +52,8 @@
 - (IRimeContext *)getContext;
 
 // MARK: schema
-- (NSArray<Schema *> *)schemaList;
-- (Schema *)currentSchema;
+- (NSArray<IRimeSchema *> *)schemaList;
+- (IRimeSchema *)currentSchema;
 - (BOOL)selectSchema:(NSString *)schemaId;
 
 // MARK: Options
@@ -61,6 +61,15 @@
 - (BOOL)isSimplifiedMode;
 - (void)asciiMode:(BOOL)value;
 - (void)simplification:(BOOL)value;
+
+// MARK: Configuration
+
+// <schema_id>.schema.yaml
+- (IRimeConfig *) openSchema:(NSString *)schemaId;
+
+// <config_id>.yaml
+- (IRimeConfig *) openConfig:(NSString *)configId;
+
 
 // MARK: Debug
 - (void)printContext;

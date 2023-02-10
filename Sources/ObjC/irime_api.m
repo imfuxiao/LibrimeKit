@@ -104,7 +104,7 @@ static void rimeNotificationHandler(void *contextObject,
 
 @end
 
-@implementation Schema
+@implementation IRimeSchema
 
 @synthesize schemaId, schemaName;
 
@@ -144,6 +144,103 @@ isSimplified, isTraditional;
 
 @end
 
+@implementation IRimeConfig {
+  RimeConfig cfg;
+}
+
+- (id)initWithRimeConfig:(RimeConfig)c {
+  if ((self = [super init]) != nil) {
+    cfg = c;
+  }
+  return self;
+}
+
+- (NSString *)getString:(NSString *)key {
+  @autoreleasepool {
+    const char *c = RimeConfigGetCString(&cfg, [key UTF8String]);
+    return [NSString stringWithUTF8String:c];
+  }
+}
+
+- (BOOL)getBool:(NSString *)key {
+  @autoreleasepool {
+    Bool value;
+    if (!!RimeConfigGetBool(&cfg, [key UTF8String], &value)) {
+      return value;
+    }
+    return FALSE;
+  }
+}
+
+- (int)getInt:(NSString *)key {
+  @autoreleasepool {
+    int value;
+    if (!!RimeConfigGetInt(&cfg, [key UTF8String], &value)) {
+      return value;
+    }
+    return INT_MIN;
+  }
+}
+- (double)getDouble:(NSString *)key {
+  @autoreleasepool {
+    double value;
+    if (!!RimeConfigGetDouble(&cfg, [key UTF8String], &value)) {
+      return value;
+    }
+    return DBL_MIN;
+  }
+}
+
+- (NSArray<IRimeConfigIteratorItem *> *)getItems:(NSString *)key {
+  NSMutableArray<IRimeConfigIteratorItem *> *array = [NSMutableArray array];
+  @autoreleasepool {
+    RimeConfigIterator iterator;
+    if (!!RimeConfigBeginList(&iterator, &cfg, [key UTF8String])) {
+      while (RimeConfigNext(&iterator)) {
+        IRimeConfigIteratorItem *item = [[IRimeConfigIteratorItem alloc] init];
+        [item setKey:[NSString stringWithUTF8String:iterator.key]];
+        [item setPath:[NSString stringWithUTF8String:iterator.path]];
+        [item setIndex:iterator.index];
+        [array addObject:item];
+      }
+      RimeConfigEnd(&iterator);
+    }
+  }
+  return [NSArray arrayWithArray:array];
+}
+
+- (NSArray<IRimeConfigIteratorItem *> *)getMapValues:(NSString *)key {
+  NSMutableArray<IRimeConfigIteratorItem *> *array = [NSMutableArray array];
+  @autoreleasepool {
+    RimeConfigIterator iterator;
+    if (!!RimeConfigBeginMap(&iterator, &cfg, [key UTF8String])) {
+      while (RimeConfigNext(&iterator)) {
+        IRimeConfigIteratorItem *item = [[IRimeConfigIteratorItem alloc] init];
+        [item setKey:[NSString stringWithUTF8String:iterator.key]];
+        [item setPath:[NSString stringWithUTF8String:iterator.path]];
+        [item setIndex:iterator.index];
+        [array addObject:item];
+      }
+      RimeConfigEnd(&iterator);
+    }
+  }
+  return [NSArray arrayWithArray:array];
+}
+
+@end
+
+@implementation IRimeConfigIteratorItem
+
+@synthesize index, key, path;
+
+- (NSString *)description {
+  return [NSString stringWithFormat:@"<%@: %p, index: %d, key: %@, path: %@>",
+          NSStringFromClass([self class]), self,
+          index, key, path];
+}
+
+@end
+
 const NSString *asciiMode = @"ascii_mode";
 const NSString *simplifiedMode = @"simplification";
 
@@ -172,10 +269,10 @@ const NSString *simplifiedMode = @"simplification";
   NSUInteger count = [traits.modules count];
   const char *modules[count + 1];
   modules[count] = NULL;
-  rimeTraits.modules = modules;
   for (int i = 0; i < count; i++) {
     modules[i] = [traits.modules[i] UTF8String];
   }
+  rimeTraits.modules = modules;
   [traits rimeTraits:&rimeTraits];
   RimeSetup(&rimeTraits);
 }
@@ -227,7 +324,7 @@ const NSString *simplifiedMode = @"simplification";
   return session;
 }
 
-- (NSArray<Schema *> *)schemaList {
+- (NSArray<IRimeSchema *> *)schemaList {
   @autoreleasepool {
     RimeSchemaList list;
     if (RimeGetSchemaList(&list)) {
@@ -236,8 +333,8 @@ const NSString *simplifiedMode = @"simplification";
       RimeSchemaListItem *items = list.list;
       for (int i = 0; i < count; i++) {
         RimeSchemaListItem item = items[i];
-        [r addObject:[[Schema alloc] initWithSchemaId:@(item.schema_id)
-                                        andSchemaName:@(item.name)]];
+        [r addObject:[[IRimeSchema alloc] initWithSchemaId:@(item.schema_id)
+                                             andSchemaName:@(item.name)]];
       }
       RimeFreeSchemaList(&list);
       return [NSArray arrayWithArray:r];
@@ -246,9 +343,9 @@ const NSString *simplifiedMode = @"simplification";
   }
 }
 
-- (Schema *)currentSchema {
+- (IRimeSchema *)currentSchema {
   @autoreleasepool {
-    Schema *s = [[Schema alloc] init];
+    IRimeSchema *s = [[IRimeSchema alloc] init];
     RIME_STRUCT(RimeStatus, rimeStatus);
     if (RimeGetStatus(session, &rimeStatus)) {
       [s setSchemaId:@(rimeStatus.schema_id)];
@@ -523,6 +620,28 @@ const NSString *simplifiedMode = @"simplification";
   RimeSimulateKeySequence(s, codes);
   [self printStatus];
   [self printContext];
+}
+
+- (IRimeConfig *)openConfig:(NSString *)configId {
+  IRimeConfig *cfg;
+  @autoreleasepool {
+    RimeConfig config;
+    if (!!RimeConfigOpen([configId UTF8String], &config)) {
+      cfg = [[IRimeConfig alloc] initWithRimeConfig:config];
+    }
+  }
+  return cfg;
+}
+
+- (IRimeConfig *)openSchema:(NSString *)schemaId {
+  IRimeConfig *cfg;
+  @autoreleasepool {
+    RimeConfig config;
+    if (!!RimeSchemaOpen([schemaId UTF8String], &config)) {
+      cfg = [[IRimeConfig alloc] initWithRimeConfig:config];
+    }
+  }
+  return cfg;
 }
 
 @end
