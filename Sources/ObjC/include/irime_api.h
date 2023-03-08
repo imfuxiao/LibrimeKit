@@ -1,6 +1,7 @@
 #import "irime_entity.h"
 #import <Foundation/Foundation.h>
 
+typedef uintptr_t RimeSessionId;
 /**
  对 rime_api.h 的 notification 回调函数封装
  */
@@ -32,45 +33,44 @@
 - (void)setNotificationDelegate:(id<IRimeNotificationDelegate>)delegate;
 
 // MARK: start and shutdown
-- (void)startRimeServer:(IRimeTraits *)traits;
 - (void)setup:(IRimeTraits *)traits;
 - (void)start:(IRimeTraits *)traits WithFullCheck:(BOOL)check;
 - (void)shutdown;
-- (BOOL)isAlive;
+- (RimeSessionId)session;
+- (BOOL)findSession:(RimeSessionId)session;
 
 // MARK: input and output
-- (BOOL)processKey:(NSString *)keyCode;
-- (BOOL)processKeyCode:(int)code;
-- (NSArray<IRimeCandidate *> *)getCandidateList;
-- (NSArray<IRimeCandidate *> *)getCandidateWithIndex:(int)pageNo andCount:(int)limit;
+- (BOOL)processKey:(NSString *)keyCode andSession:(RimeSessionId)session;
+- (BOOL)processKeyCode:(int)code andSession:(RimeSessionId)session;
+- (NSArray<IRimeCandidate *> *)getCandidateList:(RimeSessionId)session;
+- (NSArray<IRimeCandidate *> *)getCandidateWithIndex:(int)index
+                                            andCount:(int)limit
+                                          andSession:(RimeSessionId)session;
 
-- (NSString *)getInput;
-- (NSString *)getCommit;
-- (BOOL)commitComposition;
-- (void)cleanComposition;
-- (IRimeStatus *)getStatus;
-- (IRimeContext *)getContext;
+- (NSString *)getInput:(RimeSessionId)session;
+- (NSString *)getCommit:(RimeSessionId)session;
+- (BOOL)commitComposition:(RimeSessionId)session;
+- (void)cleanComposition:(RimeSessionId)session;
+- (IRimeStatus *)getStatus:(RimeSessionId)session;
+- (IRimeContext *)getContext:(RimeSessionId)session;
 
 // MARK: schema
 - (NSArray<IRimeSchema *> *)schemaList;
-- (IRimeSchema *)currentSchema;
-- (BOOL)selectSchema:(NSString *)schemaId;
-
-// MARK: Options
-- (BOOL)isAsciiMode;
-- (BOOL)isSimplifiedMode;
-- (void)asciiMode:(BOOL)value;
-- (void)simplification:(BOOL)value;
+- (IRimeSchema *)currentSchema:(RimeSessionId)session;
+- (BOOL)selectSchema:(RimeSessionId)session andSchameId:(NSString *)schemaId;
 
 // MARK: Configuration
-
-// <schema_id>.schema.yaml
-- (IRimeConfig *) openSchema:(NSString *)schemaId;
-
-// <config_id>.yaml
-- (IRimeConfig *) openConfig:(NSString *)configId;
-
+- (BOOL)getOption:(RimeSessionId)session andOption:(NSString *)option;
+- (BOOL)setOption:(RimeSessionId)session
+        andOption:(NSString *)option
+         andValue:(BOOL)value;
+// open <schema_id>.schema.yaml
+- (IRimeConfig *)openSchema:(NSString *)schemaId;
+// open <config_id>.yaml
+- (IRimeConfig *)openConfig:(NSString *)configId;
 
 // MARK: Debug
-- (void)printContext;
+- (void)printContext:(RimeSessionId)session;
+- (void)printStatus:(RimeSessionId)session;
+- (void)simulateKeySequence:(NSString *)keys andSession:(RimeSessionId)session;
 @end

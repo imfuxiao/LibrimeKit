@@ -12,3 +12,5 @@ DerivedData/
 /lib
 *.a
 *.apply
+.librime
+.boost-iosx
