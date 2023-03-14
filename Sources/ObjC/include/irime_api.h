@@ -34,6 +34,7 @@ typedef uintptr_t RimeSessionId;
 
 // MARK: start and shutdown
 - (void)setup:(IRimeTraits *)traits;
+- (void)initialize:(IRimeTraits *)traits;
 - (void)start:(IRimeTraits *)traits WithFullCheck:(BOOL)check;
 - (void)shutdown;
 - (RimeSessionId)session;
