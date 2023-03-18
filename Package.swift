@@ -6,13 +6,13 @@ import PackageDescription
 let package = Package(
   name: "LibrimeKit",
   platforms: [
-    .iOS(.v14),
+    .iOS(.v14)
   ],
   products: [
     // Products define the executables and libraries a package produces, and make them visible to other packages.
     .library(
       name: "LibrimeKit",
-      targets: ["LibrimeKit"]),
+      targets: ["LibrimeKit"])
   ],
   dependencies: [
     // Dependencies declare other packages that this package depends on.
@@ -67,11 +67,11 @@ let package = Package(
       ],
       path: "Sources/ObjC",
       cSettings: [
-        .headerSearchPath("Sources/C"),
+        .headerSearchPath("Sources/C")
       ],
       cxxSettings: [
-        .headerSearchPath("Sources/C"),
-//        .unsafeFlags(["-DLEOPARD", "-DHAVE_CONFIG_H"]),
+        .headerSearchPath("Sources/C")
+        //        .unsafeFlags(["-DLEOPARD", "-DHAVE_CONFIG_H"]),
       ],
       linkerSettings: [
         .linkedLibrary("c++"),
@@ -84,8 +84,8 @@ let package = Package(
         .copy("Resources/SharedSupport"),
         .copy("Resources/user"),
       ]
-//      swiftSettings: [
-//        .unsafeFlags(["-enable-experimental-cxx-interop"]),
-//      ]
-    )
+      //      swiftSettings: [
+      //        .unsafeFlags(["-enable-experimental-cxx-interop"]),
+      //      ]
+    ),
   ])

@@ -293,7 +293,7 @@ isSimplified, isTraditional;
   
   // check for configuration updates
   if (RimeStartMaintenance((Bool)check)) {
-    RimeJoinMaintenanceThread();
+    // RimeJoinMaintenanceThread();
     
     // update squirrel config
     RimeDeployConfigFile("squirrel.yaml", "config_version");
