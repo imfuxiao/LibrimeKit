@@ -7,49 +7,49 @@ static void rimeNotificationHandler(void *contextObject,
                                     RimeSessionId sessionId,
                                     const char *messageType,
                                     const char *messageValue) {
-  
+
   if (notificationDelegate == NULL || messageValue == NULL) {
     return;
   }
-  
+
   // on deployment
   if (!strcmp(messageType, "deploy")) {
-    
+
     if (!strcmp(messageValue, "start")) {
       [notificationDelegate onDelployStart];
       return;
     }
-    
+
     if (!strcmp(messageValue, "success")) {
       [notificationDelegate onDeploySuccess];
       return;
     }
-    
+
     if (!strcmp(messageValue, "failure")) {
       [notificationDelegate onDeployFailure];
       return;
     }
-    
+
     return;
   }
-  
+
   // TODO: 对context_object处理
   //  id app_delegate = (__bridge id)context_object;
   //  if (app_delegate && ![app_delegate enableNotifications]) {
   //    return;
   //  }
-  
+
   // on loading schema
   if (!strcmp(messageType, "schema")) {
     [notificationDelegate
-     onLoadingSchema:[NSString stringWithUTF8String:messageValue]];
+        onLoadingSchema:[NSString stringWithUTF8String:messageValue]];
     return;
   }
-  
+
   // on changing mode:
   if (!strcmp(messageType, "option")) {
     [notificationDelegate
-     onChangeMode:[NSString stringWithUTF8String:messageValue]];
+        onChangeMode:[NSString stringWithUTF8String:messageValue]];
     return;
   }
 }
@@ -70,7 +70,7 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (void)rimeTraits:(RimeTraits *)rimeTraits {
   @autoreleasepool {
-    
+
     if (sharedDataDir != nil) {
       rimeTraits->shared_data_dir = [sharedDataDir UTF8String];
     }
@@ -118,7 +118,7 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (NSString *)description {
   return
-  [NSString stringWithFormat:@"id = %@, name = %@", schemaId, schemaName];
+      [NSString stringWithFormat:@"id = %@, name = %@", schemaId, schemaName];
 }
 
 @end
@@ -127,7 +127,7 @@ static void rimeNotificationHandler(void *contextObject,
 
 @synthesize schemaId, schemaName;
 @synthesize isASCIIMode, isASCIIPunct, isComposing, isDisabled, isFullShape,
-isSimplified, isTraditional;
+    isSimplified, isTraditional;
 
 @end
 
@@ -238,8 +238,8 @@ isSimplified, isTraditional;
 
 - (NSString *)description {
   return [NSString stringWithFormat:@"<%@: %p, index: %d, key: %@, path: %@>",
-          NSStringFromClass([self class]), self,
-          index, key, path];
+                                    NSStringFromClass([self class]), self,
+                                    index, key, path];
 }
 
 @end
@@ -254,7 +254,7 @@ isSimplified, isTraditional;
 
 - (void)setup:(IRimeTraits *)traits {
   RimeSetNotificationHandler(rimeNotificationHandler, (__bridge void *)self);
-  
+
   RIME_STRUCT(RimeTraits, rimeTraits);
   // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
   // 方法内数组变量在方法结束后会被释放.
@@ -267,6 +267,25 @@ isSimplified, isTraditional;
   rimeTraits.modules = modules;
   [traits rimeTraits:&rimeTraits];
   RimeSetup(&rimeTraits);
+}
+
+- (void)deployerInitialize:(IRimeTraits *)traits {
+  if (traits == nil) {
+    RimeDeployerInitialize(NULL);
+  } else {
+    RIME_STRUCT(RimeTraits, rimeTraits);
+    // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
+    // 方法内数组变量在方法结束后会被释放.
+    NSUInteger count = [traits.modules count];
+    const char *modules[count + 1];
+    modules[count] = NULL;
+    for (int i = 0; i < count; i++) {
+      modules[i] = [traits.modules[i] UTF8String];
+    }
+    rimeTraits.modules = modules;
+    [traits rimeTraits:&rimeTraits];
+    RimeDeployerInitialize(&rimeTraits);
+  }
 }
 
 - (void)initialize:(IRimeTraits *)traits {
@@ -290,11 +309,11 @@ isSimplified, isTraditional;
 
 - (void)start:(IRimeTraits *)traits WithFullCheck:(BOOL)check {
   [self initialize:traits];
-  
+
   // check for configuration updates
   if (RimeStartMaintenance((Bool)check)) {
     // RimeJoinMaintenanceThread();
-    
+
     // update squirrel config
     RimeDeployConfigFile("squirrel.yaml", "config_version");
   }
@@ -334,14 +353,14 @@ isSimplified, isTraditional;
 #endif
       return nil;
     }
-    
+
     NSMutableArray<IRimeCandidate *> *list = [NSMutableArray array];
     while (RimeCandidateListNext(&iterator)) {
       IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
       [candidate setText:@(iterator.candidate.text)];
       [candidate setComment:iterator.candidate.comment
-       ? @(iterator.candidate.comment)
-                           : @""];
+                                ? @(iterator.candidate.comment)
+                                : @""];
       [list addObject:candidate];
     }
     RimeCandidateListEnd(&iterator);
@@ -360,19 +379,19 @@ isSimplified, isTraditional;
 #endif
       return nil;
     }
-    
+
     NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
     int maxIndex = index + count;
     while (RimeCandidateListNext(&iterator)) {
       if (iterator.index >= maxIndex) {
         break;
       }
-      
+
       IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
       [candidate setText:@(iterator.candidate.text)];
       [candidate setComment:iterator.candidate.comment
-       ? @(iterator.candidate.comment)
-                           : @""];
+                                ? @(iterator.candidate.comment)
+                                : @""];
       [candidates addObject:candidate];
     }
     RimeCandidateListEnd(&iterator);
@@ -432,24 +451,24 @@ isSimplified, isTraditional;
 
 - (IRimeContext *)getContext:(RimeSessionId)session {
   IRimeContext *context = [[IRimeContext alloc] init];
-  
+
   @autoreleasepool {
     RIME_STRUCT(RimeContext, ctx);
     if (!RimeGetContext(session, &ctx)) {
       return context;
     }
-    
+
     [context setPageNo:ctx.menu.page_no];
     [context setPageSize:ctx.menu.page_size];
     [context setIsLastPage:ctx.menu.is_last_page];
-    
+
     NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
     for (int i = 0; i < ctx.menu.num_candidates; i++) {
       IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
       [candidate setText:@(ctx.menu.candidates[i].text)];
       [candidate setComment:ctx.menu.candidates[i].comment
-       ? @(ctx.menu.candidates[i].comment)
-                           : @""];
+                                ? @(ctx.menu.candidates[i].comment)
+                                : @""];
       [candidates addObject:candidate];
     }
     [context setCandidates:[NSArray arrayWithArray:candidates]];
@@ -535,21 +554,21 @@ isSimplified, isTraditional;
     // context
     RIME_STRUCT(RimeContext, ctx);
     if (RimeGetContext(session, &ctx)) {
-      
+
       // update preedit text
       const char *preedit = ctx.composition.preedit;
       NSString *preeditText = preedit ? @(preedit) : @"";
       // input character
       NSLog(@"context input character: %@", preeditText);
-      
+
       const char *candidatePreview = ctx.commit_text_preview;
       NSString *candidatePreviewText =
-      candidatePreview ? @(candidatePreview) : @"";
+          candidatePreview ? @(candidatePreview) : @"";
       // get first candidate by rime engine
       NSLog(@"candidate preview text: %@", candidatePreviewText);
-      
+
       NSLog(@"ctx data size: %d", ctx.data_size);
-      
+
       NSLog(@"context compostion start = %d, end = %d, cursorPos = %d",
             ctx.composition.sel_start, ctx.composition.sel_end,
             ctx.composition.cursor_pos);
@@ -557,7 +576,7 @@ isSimplified, isTraditional;
             ctx.menu.page_no, ctx.menu.page_size,
             ctx.menu.is_last_page ? @"true" : @"false");
       NSLog(@"context menu selectKeys: %s", ctx.menu.select_keys);
-      
+
       // update candidates
       NSMutableArray *candidates = [NSMutableArray array];
       NSMutableArray *comments = [NSMutableArray array];
@@ -586,7 +605,7 @@ isSimplified, isTraditional;
         labels = @[];
       }
       rime_get_api()->free_context(&ctx);
-      
+
       NSLog(@"candidates: %@", candidates);
       NSLog(@"comments: %@", comments);
       NSLog(@"labels: %@", labels);
