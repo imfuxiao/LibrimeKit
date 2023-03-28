@@ -1426,7 +1426,7 @@ index 18e3407..6f8b0dc 100644
  install(TARGETS rime_dict_manager DESTINATION ${BIN_INSTALL_DIR})
  
 diff --git a/xcode.mk b/xcode.mk
-index f80d9b6..e75c4c5 100644
+index f80d9b6..5474685 100644
 --- a/xcode.mk
 +++ b/xcode.mk
 @@ -10,6 +10,69 @@ endif
@@ -1499,7 +1499,7 @@ index f80d9b6..e75c4c5 100644
  # https://cmake.org/cmake/help/latest/envvar/MACOSX_DEPLOYMENT_TARGET.html
  export MACOSX_DEPLOYMENT_TARGET ?= 10.9
  
-@@ -18,23 +81,30 @@ ifdef BUILD_UNIVERSAL
+@@ -18,23 +81,31 @@ ifdef BUILD_UNIVERSAL
  export CMAKE_OSX_ARCHITECTURES = arm64;x86_64
  endif
  
@@ -1521,7 +1521,8 @@ index f80d9b6..e75c4c5 100644
  	cmake . -B$(build) -GXcode \
 +	-DBUILD_SHARED_LIBS=OFF \
  	-DBUILD_STATIC=ON \
-+	-DBUILD_TEST=ON \
++	-DENABLE_LOGGING=ON \
++	-DBUILD_TEST=OFF \
  	-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
  	-DCMAKE_INSTALL_PREFIX="$(dist_dir)" \
 -	$(CMAKE_BOOST_OPTIONS)
@@ -1532,7 +1533,7 @@ index f80d9b6..e75c4c5 100644
  	cmake --build $(build) --config Release
  
  release-with-icu:
-@@ -44,14 +114,16 @@ release-with-icu:
+@@ -44,14 +115,16 @@ release-with-icu:
  	-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
  	-DCMAKE_INSTALL_PREFIX="$(dist_dir)" \
  	-DCMAKE_PREFIX_PATH="$(icu_prefix)" \
@@ -1551,7 +1552,7 @@ index f80d9b6..e75c4c5 100644
  	cmake --build $(build) --config Debug
  
  debug-with-icu:
-@@ -60,16 +132,28 @@ debug-with-icu:
+@@ -60,16 +133,28 @@ debug-with-icu:
  	-DBUILD_SEPARATE_LIBS=ON \
  	-DBUILD_WITH_ICU=ON \
  	-DCMAKE_PREFIX_PATH="$(icu_prefix)" \
@@ -1582,7 +1583,7 @@ index f80d9b6..e75c4c5 100644
  dist: release
  	cmake --build $(build) --config Release --target install
  
-@@ -87,13 +171,19 @@ test-debug: debug
+@@ -87,13 +172,19 @@ test-debug: debug
  
  # `thirdparty` is deprecated in favor of `deps`
  deps thirdparty:

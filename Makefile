@@ -33,8 +33,9 @@ librime-check:
 	@[ -f `which cmake` ] || { echo "Install cmake first"; exit 1; }
 
 librime-build: librime-check
+	git submodule update --init
 	${mkfile_dir}/librimeBuild.sh
 
 librime-clean:
 	rm -rf ${mkfile_dir}/librime.patch.apply
-	rm -rf Frameworks/lib*.xcframework lib/*.xcframework lib/*.a
+	rm -rf librime Frameworks/lib*.xcframework lib/*

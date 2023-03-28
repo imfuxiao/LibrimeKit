@@ -417,7 +417,12 @@ MODULE
 
 
 # librime dependences build
-export BOOST_ROOT=$RIME_ROOT/boost-iosx/dest
+if [[ ! -d ${RIME_ROOT}/.boost ]]
+then
+  mkdir ${RIME_ROOT}/.boost
+  cp -R ${RIME_ROOT}/boost-iosx/dest ${RIME_ROOT}/.boost
+fi
+export BOOST_ROOT=$RIME_ROOT/.boost/dest
 make xcode/ios/deps
 
 # PLATFORM value means
