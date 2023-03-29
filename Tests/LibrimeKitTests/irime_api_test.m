@@ -49,7 +49,7 @@ static NSString *userDirectoryName = @"user";
 
 - (NSURL *)tempSharedSupportURL {
   return [[self tempRimeURL]
-      URLByAppendingPathComponent:sharedSupportDirectoryName];
+          URLByAppendingPathComponent:sharedSupportDirectoryName];
 }
 
 - (NSURL *)tempUserURL {
@@ -67,25 +67,25 @@ static NSString *userDirectoryName = @"user";
   NSBundle *testResourceBundle = [self resourcesBundle];
   NSURL *resourceURL = [testResourceBundle resourceURL];
   NSLog(@"test resources url: %@", [resourceURL path]);
-
+  
   NSURL *sharedSupportURL =
-      [resourceURL URLByAppendingPathComponent:sharedSupportDirectoryName];
+  [resourceURL URLByAppendingPathComponent:sharedSupportDirectoryName];
   NSURL *userURL = [resourceURL URLByAppendingPathComponent:userDirectoryName];
-
+  
   NSFileManager *fm = [NSFileManager defaultManager];
   NSError *err;
-
+  
   NSURL *tempRimeURL = [self tempRimeURL];
   NSLog(@"temp dir: %@", [tempRimeURL path]);
-
+  
   if ([fm fileExistsAtPath:[tempRimeURL path]]) {
     [fm removeItemAtURL:tempRimeURL error:NULL];
   }
-
+  
   [fm createDirectoryAtURL:tempRimeURL
-      withIntermediateDirectories:TRUE
-                       attributes:NULL
-                            error:NULL];
+withIntermediateDirectories:TRUE
+                attributes:NULL
+                     error:NULL];
   [fm copyItemAtURL:sharedSupportURL
               toURL:[self tempSharedSupportURL]
               error:NULL];
@@ -114,11 +114,11 @@ static NSString *userDirectoryName = @"user";
   [traits setAppName:@"rime.hamster"];
   [traits setDistributionName:@"仓鼠"];
   [traits setDistributionCodeName:@"Hamster"];
-
+  
   IRimeAPI *api = [[IRimeAPI alloc] init];
   [api setNotificationDelegate:self];
   [api setup:traits];
-  [api start:nil WithFullCheck:false];
+  [api start:nil WithFullCheck:true];
   return api;
 }
 
@@ -134,18 +134,15 @@ static NSString *userDirectoryName = @"user";
   [rimeAPI processKey:@"w" andSession:session];
   [rimeAPI processKeyCode:QuoteLeft andSession:session];
   IRimeContext *ctx = [rimeAPI getContext:session];
-
-  for (IRimeCandidate *candidate in [ctx candidates]) {
+  
+  for (IRimeCandidate *candidate in [[ctx menu] candidates]) {
     NSLog(@"ctx text = %@, comment = %@", [candidate text],
           [candidate comment]);
   }
-
+  
   int count = 5;
-  for (int i = 0; i < ctx.pageSize; i++) {
-    NSArray<IRimeCandidate *> *candidates = [rimeAPI getCandidateWithIndex:i * count
-                                                              andCount:count
-                                                            andSession:session];
-    for (IRimeCandidate *candidate in candidates) {
+  for (int i = 0; i < ctx.menu.pageSize; i++) {
+    for (IRimeCandidate *candidate in ctx.menu.candidates) {
       NSLog(@"text = %@, comment = %@", [candidate text], [candidate comment]);
     }
   }
@@ -169,21 +166,71 @@ static NSString *userDirectoryName = @"user";
 }
 
 - (void)testSchemaList {
-  IRimeAPI *rimeAPI = [self startRime:@"/Users/morse/Downloads/rimeTestResource/SharedSupport"
-                          andUserPath:@"/Users/morse/Downloads/rimeTestResource/Rime"];
+  IRimeAPI *rimeAPI =
+  [self startRime:@"/Users/morse/Downloads/rimeTestResource/SharedSupport"
+      andUserPath:@"/Users/morse/Downloads/clover.schema-build-1.1.4"];
+  //
+  IRimeConfig *config = [rimeAPI openSchema: @"clover"];
+  [config setInt:@"menu/page_size" value: 9];
+  int pageSize = [config getInt:@"menu/page_size"];
+  NSLog(@"\n \n test pageSize: %d ", pageSize);
+
+//  int pageSize = [config getInt:@"menu/page_size"];
+//  NSLog(@"\n \n test pageSize: %d ", pageSize);
+
   RimeSessionId session = 0;
   while (session == 0) {
     session = [rimeAPI session];
   }
+  
   NSArray<IRimeSchema *> *list = [rimeAPI schemaList];
   for (IRimeSchema *schema in list) {
     NSLog(@"schemaName: %@, schemaId: %@", [schema schemaName],
           [schema schemaId]);
   }
+  
+ 
+  [rimeAPI selectSchema:session andSchameId:@"clover"];
+  
+
+  
   IRimeSchema *currentSchema = [rimeAPI currentSchema:session];
   NSLog(@"current schemaName: %@, schemaId: %@", [currentSchema schemaName],
         [currentSchema schemaId]);
-
+  
+  [rimeAPI processKey:@"w" andSession:session];
+  [rimeAPI processKey:@"o" andSession:session];
+  [rimeAPI processKey:@"a" andSession:session];
+  [rimeAPI processKey:@"i" andSession:session];
+  [rimeAPI processKey:@"c" andSession:session];
+  [rimeAPI processKey:@"h" andSession:session];
+  [rimeAPI processKey:@"i" andSession:session];
+  
+  IRimeContext *ctx = [rimeAPI getContext:session];
+  NSLog(@"ctx: %@", ctx);
+  NSLog(@"ctx.menu: %@", ctx.menu);
+  for (IRimeCandidate *c in [[ctx menu] candidates]) {
+    NSLog(@"ctx condidates: %@", c);
+  }
+  
+  IRimeStatus *status = [rimeAPI getStatus:session];
+  NSLog(@"status: %@", status);
+  
+  // 0x75 page_down
+  [rimeAPI processKeyCode: 0xFF56 andSession:session];
+  
+//  [rimeAPI processKey:@"3" andSession:session];
+  
+  ctx = [rimeAPI getContext:session];
+  NSLog(@"ctx: %@", ctx);
+  NSLog(@"ctx.menu: %@", ctx.menu);
+  for (IRimeCandidate *c in [[ctx menu] candidates]) {
+    NSLog(@"ctx condidates: %@", c);
+  }
+  
+  status = [rimeAPI getStatus:session];
+  NSLog(@"status: %@", status);
+  
   // 变更schema
   //  XCTAssertTrue([api selectSchema:@"cangjie5"]);
   //  currentSchema = [api currentSchema];
@@ -199,32 +246,32 @@ static NSString *userDirectoryName = @"user";
   }
   IRimeConfig *schemaConfig = [rimeAPI openSchema:@"flypy"];
   XCTAssertNotNil(schemaConfig);
-
+  
   NSString *value = [schemaConfig getString:@"schema/version"];
   NSLog(@"schema/version: %@", value);
   XCTAssertTrue([@"10.9.3" isEqual:value]);
-
+  
   int historySize = [schemaConfig getInt:@"history/size"];
   NSLog(@"history/size: %d", historySize);
   XCTAssertTrue(historySize == 1);
-
+  
   IRimeConfig *config = [rimeAPI openConfig:@"squirrel"];
   XCTAssertNotNil(config);
-
+  
   BOOL usKeyboardLayout = [config getBool:@"us_keyboard_layout"];
   XCTAssertTrue(usKeyboardLayout);
-
+  
   double chordDuration = [config getDouble:@"chord_duration"];
   XCTAssertTrue(chordDuration == 0.1);
-
+  
   // 获取系统全部配色map值
   NSArray<IRimeConfigIteratorItem *> *items =
-      [config getMapValues:@"preset_color_schemes"];
+  [config getMapValues:@"preset_color_schemes"];
   XCTAssertNotNil(items);
   for (IRimeConfigIteratorItem *item in items) {
     NSLog(@"color schema: %@", item);
   }
-
+  
   // 多重path使用/分隔
   // 获取当前配色名称
   value = [config getString:@"style/color_scheme"];
@@ -235,7 +282,7 @@ static NSString *userDirectoryName = @"user";
 - (void)testPerformanceExample {
   // This is an example of a performance test case.
   [self measureBlock:^{
-      // Put the code you want to measure the time of here.
+    // Put the code you want to measure the time of here.
   }];
 }
 

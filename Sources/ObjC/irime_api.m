@@ -7,49 +7,49 @@ static void rimeNotificationHandler(void *contextObject,
                                     RimeSessionId sessionId,
                                     const char *messageType,
                                     const char *messageValue) {
-
+  
   if (notificationDelegate == NULL || messageValue == NULL) {
     return;
   }
-
+  
   // on deployment
   if (!strcmp(messageType, "deploy")) {
-
+    
     if (!strcmp(messageValue, "start")) {
       [notificationDelegate onDelployStart];
       return;
     }
-
+    
     if (!strcmp(messageValue, "success")) {
       [notificationDelegate onDeploySuccess];
       return;
     }
-
+    
     if (!strcmp(messageValue, "failure")) {
       [notificationDelegate onDeployFailure];
       return;
     }
-
+    
     return;
   }
-
+  
   // TODO: 对context_object处理
   //  id app_delegate = (__bridge id)context_object;
   //  if (app_delegate && ![app_delegate enableNotifications]) {
   //    return;
   //  }
-
+  
   // on loading schema
   if (!strcmp(messageType, "schema")) {
     [notificationDelegate
-        onLoadingSchema:[NSString stringWithUTF8String:messageValue]];
+     onLoadingSchema:[NSString stringWithUTF8String:messageValue]];
     return;
   }
-
+  
   // on changing mode:
   if (!strcmp(messageType, "option")) {
     [notificationDelegate
-        onChangeMode:[NSString stringWithUTF8String:messageValue]];
+     onChangeMode:[NSString stringWithUTF8String:messageValue]];
     return;
   }
 }
@@ -70,7 +70,7 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (void)rimeTraits:(RimeTraits *)rimeTraits {
   @autoreleasepool {
-
+    
     if (sharedDataDir != nil) {
       rimeTraits->shared_data_dir = [sharedDataDir UTF8String];
     }
@@ -118,7 +118,7 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (NSString *)description {
   return
-      [NSString stringWithFormat:@"id = %@, name = %@", schemaId, schemaName];
+  [NSString stringWithFormat:@"id = %@, name = %@", schemaId, schemaName];
 }
 
 @end
@@ -127,20 +127,80 @@ static void rimeNotificationHandler(void *contextObject,
 
 @synthesize schemaId, schemaName;
 @synthesize isASCIIMode, isASCIIPunct, isComposing, isDisabled, isFullShape,
-    isSimplified, isTraditional;
+isSimplified, isTraditional;
 
+- (NSString *)description {
+return
+  [NSString stringWithFormat:
+   @"<%@: %p, schemaId: %@, schemaName: %@, isASCIIMode: %d, "
+   @"isASCIIPunct: %d, isComposing: %d, isDisabled: %d, "
+   @"isFullShape: %d, isSimplified: %d, isTraditional: %d>",
+   NSStringFromClass([self class]), self, schemaId, schemaName,
+   isASCIIMode, isASCIIPunct, isComposing, isDisabled,
+   isFullShape, isSimplified, isTraditional];
+}
 @end
 
 @implementation IRimeCandidate
 
 @synthesize text, comment;
 
+- (NSString *)description {
+  return [NSString stringWithFormat:@"<%@: %p, text: %@, comment: %@>",
+          NSStringFromClass([self class]), self, text,
+          comment];
+}
+
+@end
+
+@implementation IRimeMenu
+
+@synthesize pageSize, pageNo, isLastPage, highlightedCandidateIndex,
+numCandidates;
+@synthesize selectKeys;
+@synthesize candidates;
+
+- (NSString *)description {
+  return [NSString
+          stringWithFormat:@"<%@: %p, pageSize: %d, pageNo: %d, isLastPage: %@, "
+          @"highlightedCandidateIndex: %d, numCandidates %d,"
+          @"selectKeys: %@, candidates: %@>",
+          NSStringFromClass([self class]), self, pageSize, pageNo,
+          isLastPage ? @"true" : @"false",
+          highlightedCandidateIndex, numCandidates, selectKeys,
+          candidates];
+}
+
+@end
+
+@implementation IRimeComposition
+
+@synthesize length, cursorPos, selStart, selEnd, preedit;
+
+- (NSString *)description {
+  return
+  [NSString stringWithFormat:@"<%@: %p, length: %d, cursorPos: %d, "
+   @"selStart: %d, selEnd: %d, preedit: %@>",
+   NSStringFromClass([self class]), self, length,
+   cursorPos, selStart, selEnd, preedit];
+}
+
 @end
 
 @implementation IRimeContext
 
-@synthesize pageNo, pageSize, isLastPage;
-@synthesize candidates;
+@synthesize commitTextPreview;
+@synthesize composition;
+@synthesize menu;
+@synthesize labels;
+
+- (NSString *)description {
+  return
+  [NSString stringWithFormat:@"<%@: %p, commitTextPreview: %@, "
+   @"composition: %@, labels: %@, menu: %@>",
+   NSStringFromClass([self class]), self,
+   commitTextPreview, composition, labels, menu];
+}
 
 @end
 
@@ -184,6 +244,13 @@ static void rimeNotificationHandler(void *contextObject,
     return INT_MIN;
   }
 }
+
+- (BOOL)setInt:(NSString *)key value:(int)value {
+  @autoreleasepool {
+    return RimeConfigSetInt(&cfg, [key UTF8String], value);
+  }
+}
+
 - (double)getDouble:(NSString *)key {
   @autoreleasepool {
     double value;
@@ -238,8 +305,8 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (NSString *)description {
   return [NSString stringWithFormat:@"<%@: %p, index: %d, key: %@, path: %@>",
-                                    NSStringFromClass([self class]), self,
-                                    index, key, path];
+          NSStringFromClass([self class]), self,
+          index, key, path];
 }
 
 @end
@@ -254,7 +321,7 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (void)setup:(IRimeTraits *)traits {
   RimeSetNotificationHandler(rimeNotificationHandler, (__bridge void *)self);
-
+  
   RIME_STRUCT(RimeTraits, rimeTraits);
   // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
   // 方法内数组变量在方法结束后会被释放.
@@ -309,11 +376,11 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (void)start:(IRimeTraits *)traits WithFullCheck:(BOOL)check {
   [self initialize:traits];
-
+  
   // check for configuration updates
   if (RimeStartMaintenance((Bool)check)) {
     // RimeJoinMaintenanceThread();
-
+    
     // update squirrel config
     RimeDeployConfigFile("squirrel.yaml", "config_version");
   }
@@ -329,7 +396,10 @@ static void rimeNotificationHandler(void *contextObject,
 }
 
 - (BOOL)findSession:(RimeSessionId)session {
-  return !!RimeFindSession(session);
+  return RimeFindSession(session);
+}
+- (void)cleanAllSession {
+  RimeCleanupAllSessions();
 }
 
 - (BOOL)processKey:(NSString *)keyCode andSession:(RimeSessionId)session {
@@ -353,14 +423,14 @@ static void rimeNotificationHandler(void *contextObject,
 #endif
       return nil;
     }
-
+    
     NSMutableArray<IRimeCandidate *> *list = [NSMutableArray array];
     while (RimeCandidateListNext(&iterator)) {
       IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
       [candidate setText:@(iterator.candidate.text)];
       [candidate setComment:iterator.candidate.comment
-                                ? @(iterator.candidate.comment)
-                                : @""];
+       ? @(iterator.candidate.comment)
+                           : @""];
       [list addObject:candidate];
     }
     RimeCandidateListEnd(&iterator);
@@ -379,19 +449,19 @@ static void rimeNotificationHandler(void *contextObject,
 #endif
       return nil;
     }
-
+    
     NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
     int maxIndex = index + count;
     while (RimeCandidateListNext(&iterator)) {
       if (iterator.index >= maxIndex) {
         break;
       }
-
+      
       IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
       [candidate setText:@(iterator.candidate.text)];
       [candidate setComment:iterator.candidate.comment
-                                ? @(iterator.candidate.comment)
-                                : @""];
+       ? @(iterator.candidate.comment)
+                           : @""];
       [candidates addObject:candidate];
     }
     RimeCandidateListEnd(&iterator);
@@ -451,27 +521,58 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (IRimeContext *)getContext:(RimeSessionId)session {
   IRimeContext *context = [[IRimeContext alloc] init];
-
+  
   @autoreleasepool {
     RIME_STRUCT(RimeContext, ctx);
-    if (!RimeGetContext(session, &ctx)) {
-      return context;
+    if (RimeGetContext(session, &ctx)) {
+      
+      const char *candidatePreview = ctx.commit_text_preview;
+      [context
+       setCommitTextPreview:candidatePreview ? @(candidatePreview) : @""];
+      
+      // composition
+      IRimeComposition *composition = [[IRimeComposition alloc] init];
+      [composition setLength:ctx.composition.length];
+      [composition setCursorPos:ctx.composition.cursor_pos];
+      [composition setSelStart:ctx.composition.sel_start];
+      [composition setSelEnd:ctx.composition.sel_end];
+      const char *preedit = ctx.composition.preedit;
+      [composition setPreedit:preedit ? @(preedit) : @""];
+      [context setComposition:composition];
+      
+      // lables
+      if (ctx.select_labels) {
+        NSMutableArray *selectLabels = [NSMutableArray array];
+        for (int i = 0; i < ctx.menu.page_size; ++i) {
+          char *label_str = ctx.select_labels[i];
+          [selectLabels addObject:@(label_str)];
+        }
+        [context setLabels:[NSArray arrayWithArray:selectLabels]];
+      } else {
+        [context setLabels:@[]];
+      }
+      
+      // menu
+      IRimeMenu *menu = [[IRimeMenu alloc] init];
+      [menu setPageNo:ctx.menu.page_no];
+      [menu setPageSize:ctx.menu.page_size];
+      [menu setIsLastPage:ctx.menu.is_last_page];
+      [menu setHighlightedCandidateIndex:ctx.menu.highlighted_candidate_index];
+      [menu setNumCandidates:ctx.menu.num_candidates];
+      
+      NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
+      for (int i = 0; i < ctx.menu.num_candidates; i++) {
+        IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
+        [candidate setText:@(ctx.menu.candidates[i].text)];
+        [candidate setComment:ctx.menu.candidates[i].comment
+         ? @(ctx.menu.candidates[i].comment)
+                             : @""];
+        [candidates addObject:candidate];
+      }
+      [menu setCandidates:[NSArray arrayWithArray:candidates]];
+      [context setMenu:menu];
     }
-
-    [context setPageNo:ctx.menu.page_no];
-    [context setPageSize:ctx.menu.page_size];
-    [context setIsLastPage:ctx.menu.is_last_page];
-
-    NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
-    for (int i = 0; i < ctx.menu.num_candidates; i++) {
-      IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
-      [candidate setText:@(ctx.menu.candidates[i].text)];
-      [candidate setComment:ctx.menu.candidates[i].comment
-                                ? @(ctx.menu.candidates[i].comment)
-                                : @""];
-      [candidates addObject:candidate];
-    }
-    [context setCandidates:[NSArray arrayWithArray:candidates]];
+    RimeFreeContext(&ctx);
   }
   return context;
 }
@@ -554,21 +655,21 @@ static void rimeNotificationHandler(void *contextObject,
     // context
     RIME_STRUCT(RimeContext, ctx);
     if (RimeGetContext(session, &ctx)) {
-
+      
       // update preedit text
       const char *preedit = ctx.composition.preedit;
       NSString *preeditText = preedit ? @(preedit) : @"";
       // input character
       NSLog(@"context input character: %@", preeditText);
-
+      
       const char *candidatePreview = ctx.commit_text_preview;
       NSString *candidatePreviewText =
-          candidatePreview ? @(candidatePreview) : @"";
+      candidatePreview ? @(candidatePreview) : @"";
       // get first candidate by rime engine
       NSLog(@"candidate preview text: %@", candidatePreviewText);
-
+      
       NSLog(@"ctx data size: %d", ctx.data_size);
-
+      
       NSLog(@"context compostion start = %d, end = %d, cursorPos = %d",
             ctx.composition.sel_start, ctx.composition.sel_end,
             ctx.composition.cursor_pos);
@@ -576,7 +677,7 @@ static void rimeNotificationHandler(void *contextObject,
             ctx.menu.page_no, ctx.menu.page_size,
             ctx.menu.is_last_page ? @"true" : @"false");
       NSLog(@"context menu selectKeys: %s", ctx.menu.select_keys);
-
+      
       // update candidates
       NSMutableArray *candidates = [NSMutableArray array];
       NSMutableArray *comments = [NSMutableArray array];
@@ -605,7 +706,7 @@ static void rimeNotificationHandler(void *contextObject,
         labels = @[];
       }
       rime_get_api()->free_context(&ctx);
-
+      
       NSLog(@"candidates: %@", candidates);
       NSLog(@"comments: %@", comments);
       NSLog(@"labels: %@", labels);

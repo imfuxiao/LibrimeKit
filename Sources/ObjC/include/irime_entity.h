@@ -94,15 +94,50 @@
 
 @end
 
-@interface IRimeContext : NSObject {
-  int pageNo, pageSize;
+@interface IRimeMenu : NSObject {
+  int pageSize;
+  int pageNo;
   BOOL isLastPage;
+  int highlightedCandidateIndex;
+  int numCandidates;
+  NSString *selectKeys;
   NSArray<IRimeCandidate *> *candidates;
 }
 
-@property int pageNo, pageSize;
+@property int pageSize;
+@property int pageNo;
 @property BOOL isLastPage;
+@property int highlightedCandidateIndex;
+@property int numCandidates;
+@property NSString *selectKeys;
 @property NSArray<IRimeCandidate *> *candidates;
+
+@end
+
+@interface IRimeComposition : NSObject {
+  int length;
+  int cursorPos;
+  int selStart;
+  int selEnd;
+  NSString *preedit;
+}
+
+@property int length, cursorPos, selStart, selEnd;
+@property NSString *preedit;
+
+@end
+
+@interface IRimeContext : NSObject {
+  NSString *commitTextPreview;
+  IRimeMenu *menu;
+  IRimeComposition *composition;
+  NSArray<NSString *> *labels;
+}
+
+@property NSString *commitTextPreview;
+@property IRimeMenu *menu;
+@property IRimeComposition *composition;
+@property NSArray<NSString *> *labels;
 
 @end
 
@@ -124,6 +159,7 @@
 - (NSString *)getString:(NSString *)key;
 - (BOOL)getBool:(NSString *)key;
 - (int)getInt:(NSString *)key;
+- (BOOL)setInt:(NSString *)key value:(int) value;
 - (double)getDouble:(NSString *)key;
 
 - (NSArray<IRimeConfigIteratorItem *> *)getItems:(NSString *)key;

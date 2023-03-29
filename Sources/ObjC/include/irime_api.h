@@ -40,6 +40,7 @@ typedef uintptr_t RimeSessionId;
 - (void)shutdown;
 - (RimeSessionId)session;
 - (BOOL)findSession:(RimeSessionId)session;
+- (void)cleanAllSession;
 
 // MARK: input and output
 - (BOOL)processKey:(NSString *)keyCode andSession:(RimeSessionId)session;
