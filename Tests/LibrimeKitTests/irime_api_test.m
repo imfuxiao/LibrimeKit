@@ -118,7 +118,8 @@ withIntermediateDirectories:TRUE
   IRimeAPI *api = [[IRimeAPI alloc] init];
   [api setNotificationDelegate:self];
   [api setup:traits];
-  [api start:nil WithFullCheck:true];
+  [api initialize:traits];
+  [api startMaintenance:true];
   return api;
 }
 
@@ -126,7 +127,7 @@ withIntermediateDirectories:TRUE
   IRimeAPI *rimeAPI = [self startRime];
   RimeSessionId session = 0;
   while (session == 0) {
-    session = [rimeAPI session];
+    session = [rimeAPI createSession];
   }
   
   XCTAssertTrue(session > 0);
@@ -152,7 +153,7 @@ withIntermediateDirectories:TRUE
   IRimeAPI *api = [self startRime];
   RimeSessionId session = 0;
   while (session == 0) {
-    session = [api session];
+    session = [api createSession];
   }
   
   [api processKey:@"w" andSession:session];
@@ -167,32 +168,23 @@ withIntermediateDirectories:TRUE
 
 - (void)testSchemaList {
   IRimeAPI *rimeAPI =
-  [self startRime:@"/Users/morse/Downloads/rimeTestResource/SharedSupport"
-      andUserPath:@"/Users/morse/Downloads/clover.schema-build-1.1.4"];
-  //
-  IRimeConfig *config = [rimeAPI openSchema: @"clover"];
-  [config setInt:@"menu/page_size" value: 9];
-  int pageSize = [config getInt:@"menu/page_size"];
-  NSLog(@"\n \n test pageSize: %d ", pageSize);
-
-//  int pageSize = [config getInt:@"menu/page_size"];
-//  NSLog(@"\n \n test pageSize: %d ", pageSize);
-
+  [self startRime:@"/Users/morse/Downloads/rimeTestResources/SharedSupport"
+      andUserPath:@"/Users/morse/Downloads/rimeTestResources/rime"];
+  
   RimeSessionId session = 0;
   while (session == 0) {
-    session = [rimeAPI session];
+    session = [rimeAPI createSession];
   }
   
-  NSArray<IRimeSchema *> *list = [rimeAPI schemaList];
-  for (IRimeSchema *schema in list) {
-    NSLog(@"schemaName: %@, schemaId: %@", [schema schemaName],
-          [schema schemaId]);
-  }
+  // 选择输入法并设置分页大小.
+  IRimeConfig *config = [rimeAPI openSchema:@"clover"];
+  [config setInt:@"menu/page_size" value:20];
+  int pageSize = [config getInt:@"menu/page_size"];
+  NSLog(@"\n \n test pageSize: %d ", pageSize);
   
- 
+  NSLog(@"\n schema list: %@", [rimeAPI schemaList]);
+  
   [rimeAPI selectSchema:session andSchameId:@"clover"];
-  
-
   
   IRimeSchema *currentSchema = [rimeAPI currentSchema:session];
   NSLog(@"current schemaName: %@, schemaId: %@", [currentSchema schemaName],
@@ -205,31 +197,47 @@ withIntermediateDirectories:TRUE
   [rimeAPI processKey:@"c" andSession:session];
   [rimeAPI processKey:@"h" andSession:session];
   [rimeAPI processKey:@"i" andSession:session];
+  [rimeAPI processKey:@"m" andSession:session];
+  [rimeAPI processKey:@"i" andSession:session];
+  [rimeAPI processKey:@"a" andSession:session];
+  [rimeAPI processKey:@"n" andSession:session];
+  
   
   IRimeContext *ctx = [rimeAPI getContext:session];
-  NSLog(@"ctx: %@", ctx);
-  NSLog(@"ctx.menu: %@", ctx.menu);
-  for (IRimeCandidate *c in [[ctx menu] candidates]) {
-    NSLog(@"ctx condidates: %@", c);
+  NSLog(@"ctx composition preeidt: %@", ctx.composition.preedit);
+  NSArray<IRimeCandidate *> *candidates = [rimeAPI getCandidateList: session];
+//  NSArray<IRimeCandidate *> *candidates = [rimeAPI getCandidateWithIndex:1 andCount:20 andSession:session];
+  for (IRimeCandidate *c in candidates) {
+    NSLog(@"ctx composition: %@", c);
   }
   
-  IRimeStatus *status = [rimeAPI getStatus:session];
-  NSLog(@"status: %@", status);
+//  IRimeStatus *status = [rimeAPI getStatus:session];
+//  NSLog(@"status: %@", status);
+//
+//  // 翻页
+//  candidates = [rimeAPI getCandidateWithIndex:21 andCount:20 andSession:session];
+//  for (IRimeCandidate *c in candidates) {
+//    NSLog(@"ctx composition: %@", c);
+//  }
+//
+//  // 选择第2页下标
+//  [rimeAPI selectCandidate: session andIndex: 40];
+//  ctx = [rimeAPI getContext:session];
+//  NSLog(@"ctx composition preedit: %@", ctx.composition.preedit);
+//
+//  // 删除选择字
+//  [rimeAPI processKeyCode:0xff08 andSession:session];
+//  ctx = [rimeAPI getContext:session];
+//  NSLog(@"ctx composition preedit: %@", ctx.composition.preedit);
+//  candidates = [rimeAPI getCandidateWithIndex:1 andCount:20 andSession:session];
+//  for (IRimeCandidate *c in candidates) {
+//    NSLog(@"ctx composition: %@", c);
+//  }
   
-  // 0x75 page_down
-  [rimeAPI processKeyCode: 0xFF56 andSession:session];
-  
-//  [rimeAPI processKey:@"3" andSession:session];
-  
-  ctx = [rimeAPI getContext:session];
-  NSLog(@"ctx: %@", ctx);
-  NSLog(@"ctx.menu: %@", ctx.menu);
-  for (IRimeCandidate *c in [[ctx menu] candidates]) {
-    NSLog(@"ctx condidates: %@", c);
-  }
-  
-  status = [rimeAPI getStatus:session];
-  NSLog(@"status: %@", status);
+//  status = [rimeAPI getStatus:session];
+//  NSLog(@"status: %@", status);
+//
+//    [rimeAPI processKeyCode: 0xFF56 andSession:session];
   
   // 变更schema
   //  XCTAssertTrue([api selectSchema:@"cangjie5"]);
@@ -242,7 +250,7 @@ withIntermediateDirectories:TRUE
   IRimeAPI *rimeAPI = [self startRime];
   RimeSessionId session = 0;
   while (session == 0) {
-    session = [rimeAPI session];
+    session = [rimeAPI createSession];
   }
   IRimeConfig *schemaConfig = [rimeAPI openSchema:@"flypy"];
   XCTAssertNotNil(schemaConfig);

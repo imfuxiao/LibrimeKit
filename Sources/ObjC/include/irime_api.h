@@ -34,11 +34,15 @@ typedef uintptr_t RimeSessionId;
 
 // MARK: start and shutdown
 - (void)setup:(IRimeTraits *)traits;
-- (void)deployerInitialize:(IRimeTraits *)traits;
 - (void)initialize:(IRimeTraits *)traits;
-- (void)start:(IRimeTraits *)traits WithFullCheck:(BOOL)check;
-- (void)shutdown;
-- (RimeSessionId)session;
+- (void)finalize;
+
+- (void)startMaintenance:(BOOL)fullCheck;
+
+- (void)syncUserData;
+
+// Session management
+- (RimeSessionId)createSession;
 - (BOOL)findSession:(RimeSessionId)session;
 - (void)cleanAllSession;
 
@@ -46,9 +50,13 @@ typedef uintptr_t RimeSessionId;
 - (BOOL)processKey:(NSString *)keyCode andSession:(RimeSessionId)session;
 - (BOOL)processKeyCode:(int)code andSession:(RimeSessionId)session;
 - (NSArray<IRimeCandidate *> *)getCandidateList:(RimeSessionId)session;
+// MAKR: index从1开始
 - (NSArray<IRimeCandidate *> *)getCandidateWithIndex:(int)index
                                             andCount:(int)limit
                                           andSession:(RimeSessionId)session;
+// MAKR: index从1开始
+- (BOOL)selectCandidate:(RimeSessionId)session andIndex:(int)index;
+- (BOOL)deleteCandidate:(RimeSessionId)session andIndex:(int)index;
 
 - (NSString *)getInput:(RimeSessionId)session;
 - (NSString *)getCommit:(RimeSessionId)session;
@@ -73,7 +81,5 @@ typedef uintptr_t RimeSessionId;
 - (IRimeConfig *)openConfig:(NSString *)configId;
 
 // MARK: Debug
-- (void)printContext:(RimeSessionId)session;
-- (void)printStatus:(RimeSessionId)session;
 - (void)simulateKeySequence:(NSString *)keys andSession:(RimeSessionId)session;
 @end

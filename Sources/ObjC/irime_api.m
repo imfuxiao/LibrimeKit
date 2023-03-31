@@ -69,36 +69,46 @@ static void rimeNotificationHandler(void *contextObject,
 @synthesize stagingDir;
 
 - (void)rimeTraits:(RimeTraits *)rimeTraits {
-  @autoreleasepool {
-    
-    if (sharedDataDir != nil) {
-      rimeTraits->shared_data_dir = [sharedDataDir UTF8String];
+  if (sharedDataDir != nil) {
+    rimeTraits->shared_data_dir = [sharedDataDir UTF8String];
+  }
+  if (userDataDir != nil) {
+    rimeTraits->user_data_dir = [userDataDir UTF8String];
+  }
+  if (distributionName != nil) {
+    rimeTraits->distribution_name = [distributionName UTF8String];
+  }
+  if (distributionCodeName != nil) {
+    rimeTraits->distribution_code_name = [distributionCodeName UTF8String];
+  }
+  if (distributionVersion != nil) {
+    rimeTraits->distribution_version = [distributionVersion UTF8String];
+  }
+  if (appName != nil) {
+    rimeTraits->app_name = [appName UTF8String];
+  }
+  //    rimeTraits->min_log_level = minLogLevel;
+  //    if (logDir != nil) {
+  //      rimeTraits->log_dir = [logDir UTF8String];
+  //    }
+  
+  // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
+  // 方法内数组变量在方法结束后会被释放.
+  if (modules.count > 0) {
+    NSUInteger count = [modules count];
+    const char *tempModules[count + 1];
+    tempModules[count] = NULL;
+    for (int i = 0; i < count; i++) {
+      tempModules[i] = [modules[i] UTF8String];
     }
-    if (userDataDir != nil) {
-      rimeTraits->user_data_dir = [userDataDir UTF8String];
-    }
-    if (distributionName != nil) {
-      rimeTraits->distribution_name = [distributionName UTF8String];
-    }
-    if (distributionCodeName != nil) {
-      rimeTraits->distribution_code_name = [distributionCodeName UTF8String];
-    }
-    if (distributionVersion != nil) {
-      rimeTraits->distribution_version = [distributionVersion UTF8String];
-    }
-    if (appName != nil) {
-      rimeTraits->app_name = [appName UTF8String];
-    }
-    //    rimeTraits->min_log_level = minLogLevel;
-    //    if (logDir != nil) {
-    //      rimeTraits->log_dir = [logDir UTF8String];
-    //    }
-    if (prebuiltDataDir != nil) {
-      rimeTraits->prebuilt_data_dir = [prebuiltDataDir UTF8String];
-    }
-    if (stagingDir != nil) {
-      rimeTraits->staging_dir = [stagingDir UTF8String];
-    }
+    rimeTraits->modules = tempModules;
+  }
+  
+  if (prebuiltDataDir != nil) {
+    rimeTraits->prebuilt_data_dir = [prebuiltDataDir UTF8String];
+  }
+  if (stagingDir != nil) {
+    rimeTraits->staging_dir = [stagingDir UTF8String];
   }
 }
 
@@ -317,42 +327,13 @@ numCandidates;
 
 - (void)setNotificationDelegate:(id<IRimeNotificationDelegate>)delegate {
   notificationDelegate = delegate;
+  RimeSetNotificationHandler(rimeNotificationHandler, (__bridge void *)self);
 }
 
 - (void)setup:(IRimeTraits *)traits {
-  RimeSetNotificationHandler(rimeNotificationHandler, (__bridge void *)self);
-  
   RIME_STRUCT(RimeTraits, rimeTraits);
-  // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
-  // 方法内数组变量在方法结束后会被释放.
-  NSUInteger count = [traits.modules count];
-  const char *modules[count + 1];
-  modules[count] = NULL;
-  for (int i = 0; i < count; i++) {
-    modules[i] = [traits.modules[i] UTF8String];
-  }
-  rimeTraits.modules = modules;
   [traits rimeTraits:&rimeTraits];
   RimeSetup(&rimeTraits);
-}
-
-- (void)deployerInitialize:(IRimeTraits *)traits {
-  if (traits == nil) {
-    RimeDeployerInitialize(NULL);
-  } else {
-    RIME_STRUCT(RimeTraits, rimeTraits);
-    // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
-    // 方法内数组变量在方法结束后会被释放.
-    NSUInteger count = [traits.modules count];
-    const char *modules[count + 1];
-    modules[count] = NULL;
-    for (int i = 0; i < count; i++) {
-      modules[i] = [traits.modules[i] UTF8String];
-    }
-    rimeTraits.modules = modules;
-    [traits rimeTraits:&rimeTraits];
-    RimeDeployerInitialize(&rimeTraits);
-  }
 }
 
 - (void)initialize:(IRimeTraits *)traits {
@@ -360,41 +341,31 @@ numCandidates;
     RimeInitialize(NULL);
   } else {
     RIME_STRUCT(RimeTraits, rimeTraits);
-    // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
-    // 方法内数组变量在方法结束后会被释放.
-    NSUInteger count = [traits.modules count];
-    const char *modules[count + 1];
-    modules[count] = NULL;
-    rimeTraits.modules = modules;
-    for (int i = 0; i < count; i++) {
-      modules[i] = [traits.modules[i] UTF8String];
-    }
     [traits rimeTraits:&rimeTraits];
     RimeInitialize(&rimeTraits);
   }
 }
 
-- (void)start:(IRimeTraits *)traits WithFullCheck:(BOOL)check {
-  [self initialize:traits];
-  
-  // check for configuration updates
-  if (RimeStartMaintenance((Bool)check)) {
-    // RimeJoinMaintenanceThread();
-    
-    // update squirrel config
-    RimeDeployConfigFile("squirrel.yaml", "config_version");
-  }
-}
-
-- (void)shutdown {
-  RimeCleanupAllSessions();
+- (void)finalize {
   RimeFinalize();
 }
 
-- (RimeSessionId)session {
-  return RimeCreateSession();
+- (void)startMaintenance:(BOOL)fullCheck {
+  // check for configuration updates
+  if (RimeStartMaintenance((Bool)fullCheck) && RimeIsMaintenancing()) {
+    RimeJoinMaintenanceThread();
+  }
+  // update squirrel config
+  RimeDeployConfigFile("squirrel.yaml", "config_version");
 }
 
+- (void)syncUserData {
+  RimeSyncUserData();
+}
+
+- (RimeSessionId)createSession {
+  return RimeCreateSession();
+}
 - (BOOL)findSession:(RimeSessionId)session {
   return RimeFindSession(session);
 }
@@ -418,10 +389,7 @@ numCandidates;
   @autoreleasepool {
     RimeCandidateListIterator iterator = {0};
     if (!RimeCandidateListBegin(session, &iterator)) {
-#if DEBUG
-      NSLog(@"get candidate list error");
-#endif
-      return nil;
+      return [NSArray array];
     }
     
     NSMutableArray<IRimeCandidate *> *list = [NSMutableArray array];
@@ -447,7 +415,7 @@ numCandidates;
 #if DEBUG
       NSLog(@"get candidate list error");
 #endif
-      return nil;
+      return [NSArray array];
     }
     
     NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
@@ -468,6 +436,15 @@ numCandidates;
     return [NSArray arrayWithArray:candidates];
   }
 }
+
+- (BOOL)selectCandidate:(RimeSessionId)session andIndex:(int)index {
+  return rime_get_api()->select_candidate(session, index);
+}
+
+- (BOOL)deleteCandidate:(RimeSessionId)session andIndex:(int)index {
+  return rime_get_api()->delete_candidate(session, index);
+}
+
 - (NSString *)getInput:(RimeSessionId)session {
   @autoreleasepool {
     const char *input = rime_get_api()->get_input(session);
@@ -540,17 +517,18 @@ numCandidates;
       [composition setPreedit:preedit ? @(preedit) : @""];
       [context setComposition:composition];
       
+      // 这里为了性能考虑, 先屏蔽
       // lables
-      if (ctx.select_labels) {
-        NSMutableArray *selectLabels = [NSMutableArray array];
-        for (int i = 0; i < ctx.menu.page_size; ++i) {
-          char *label_str = ctx.select_labels[i];
-          [selectLabels addObject:@(label_str)];
-        }
-        [context setLabels:[NSArray arrayWithArray:selectLabels]];
-      } else {
-        [context setLabels:@[]];
-      }
+      //      if (ctx.select_labels) {
+      //        NSMutableArray *selectLabels = [NSMutableArray array];
+      //        for (int i = 0; i < ctx.menu.page_size; ++i) {
+      //          char *label_str = ctx.select_labels[i];
+      //          [selectLabels addObject:@(label_str)];
+      //        }
+      //        [context setLabels:[NSArray arrayWithArray:selectLabels]];
+      //      } else {
+      //        [context setLabels:@[]];
+      //      }
       
       // menu
       IRimeMenu *menu = [[IRimeMenu alloc] init];
@@ -559,17 +537,19 @@ numCandidates;
       [menu setIsLastPage:ctx.menu.is_last_page];
       [menu setHighlightedCandidateIndex:ctx.menu.highlighted_candidate_index];
       [menu setNumCandidates:ctx.menu.num_candidates];
+      [menu setSelectKeys:ctx.menu.select_keys ? @(ctx.menu.select_keys) : @""];
       
-      NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
-      for (int i = 0; i < ctx.menu.num_candidates; i++) {
-        IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
-        [candidate setText:@(ctx.menu.candidates[i].text)];
-        [candidate setComment:ctx.menu.candidates[i].comment
-         ? @(ctx.menu.candidates[i].comment)
-                             : @""];
-        [candidates addObject:candidate];
-      }
-      [menu setCandidates:[NSArray arrayWithArray:candidates]];
+      // 分页不在使用context, 这里为了性能考虑, 先屏蔽
+      //      NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray
+      //      array]; for (int i = 0; i < ctx.menu.num_candidates; i++) {
+      //        IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
+      //        [candidate setText:@(ctx.menu.candidates[i].text)];
+      //        [candidate setComment:ctx.menu.candidates[i].comment
+      //         ? @(ctx.menu.candidates[i].comment)
+      //                             : @""];
+      //        [candidates addObject:candidate];
+      //      }
+      //      [menu setCandidates:[NSArray arrayWithArray:candidates]];
       [context setMenu:menu];
     }
     RimeFreeContext(&ctx);
@@ -649,97 +629,10 @@ numCandidates;
   return cfg;
 }
 
-// MARK: Debug
-- (void)printContext:(RimeSessionId)session {
-  @autoreleasepool {
-    // context
-    RIME_STRUCT(RimeContext, ctx);
-    if (RimeGetContext(session, &ctx)) {
-      
-      // update preedit text
-      const char *preedit = ctx.composition.preedit;
-      NSString *preeditText = preedit ? @(preedit) : @"";
-      // input character
-      NSLog(@"context input character: %@", preeditText);
-      
-      const char *candidatePreview = ctx.commit_text_preview;
-      NSString *candidatePreviewText =
-      candidatePreview ? @(candidatePreview) : @"";
-      // get first candidate by rime engine
-      NSLog(@"candidate preview text: %@", candidatePreviewText);
-      
-      NSLog(@"ctx data size: %d", ctx.data_size);
-      
-      NSLog(@"context compostion start = %d, end = %d, cursorPos = %d",
-            ctx.composition.sel_start, ctx.composition.sel_end,
-            ctx.composition.cursor_pos);
-      NSLog(@"context menu pageNo = %d, pageSize = %d, isLastPage = %@",
-            ctx.menu.page_no, ctx.menu.page_size,
-            ctx.menu.is_last_page ? @"true" : @"false");
-      NSLog(@"context menu selectKeys: %s", ctx.menu.select_keys);
-      
-      // update candidates
-      NSMutableArray *candidates = [NSMutableArray array];
-      NSMutableArray *comments = [NSMutableArray array];
-      NSUInteger i;
-      for (i = 0; i < ctx.menu.num_candidates; ++i) {
-        [candidates addObject:@(ctx.menu.candidates[i].text)];
-        if (ctx.menu.candidates[i].comment) {
-          [comments addObject:@(ctx.menu.candidates[i].comment)];
-        } else {
-          [comments addObject:@""];
-        }
-        NSLog(@"candidate index = %ld, text = %@", i, candidates[i]);
-        NSLog(@"comments index = %ld, text = %@", i, comments[i]);
-      }
-      NSArray *labels;
-      if (ctx.menu.select_keys) {
-        labels = @[ @(ctx.menu.select_keys) ];
-      } else if (ctx.select_labels) {
-        NSMutableArray *selectLabels = [NSMutableArray array];
-        for (i = 0; i < ctx.menu.page_size; ++i) {
-          char *label_str = ctx.select_labels[i];
-          [selectLabels addObject:@(label_str)];
-        }
-        labels = selectLabels;
-      } else {
-        labels = @[];
-      }
-      rime_get_api()->free_context(&ctx);
-      
-      NSLog(@"candidates: %@", candidates);
-      NSLog(@"comments: %@", comments);
-      NSLog(@"labels: %@", labels);
-    }
-    RimeFreeContext(&ctx);
-  }
-}
-
-- (void)printStatus:(RimeSessionId)session {
-  @autoreleasepool {
-    RIME_STRUCT(RimeStatus, rimeStatus);
-    if (!RimeGetStatus(session, &rimeStatus)) {
-      NSLog(@"get status error");
-      return;
-    }
-    NSLog(@"current status: schema_id = %s, schema_name = %s,\n ascii_mode = "
-          @"%d, ascii_punct = %d, composing = %d, disaled = %d, full_shape = "
-          @"%d, simplified = %d, traditional = %d",
-          rimeStatus.schema_id, rimeStatus.schema_name,
-          rimeStatus.is_ascii_mode, rimeStatus.is_ascii_punct,
-          rimeStatus.is_composing, rimeStatus.is_disabled,
-          rimeStatus.is_full_shape, rimeStatus.is_simplified,
-          rimeStatus.is_traditional);
-    RimeFreeStatus(&rimeStatus);
-  }
-}
-
 - (void)simulateKeySequence:(NSString *)keys andSession:(RimeSessionId)session {
   NSLog(@"input keys = %@", keys);
   const char *codes = [keys UTF8String];
   RimeSimulateKeySequence(session, codes);
-  [self printStatus:session];
-  [self printContext:session];
 }
 
 @end
