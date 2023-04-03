@@ -168,8 +168,8 @@ withIntermediateDirectories:TRUE
 
 - (void)testSchemaList {
   IRimeAPI *rimeAPI =
-  [self startRime:@"/Users/morse/Downloads/rimeTestResources/SharedSupport"
-      andUserPath:@"/Users/morse/Downloads/rimeTestResources/rime"];
+  [self startRime:@"/Users/morse/Library/Developer/CoreSimulator/Devices/533802BB-B174-4780-A1F5-DF1564DBF2FC/data/Containers/Data/Application/266DEA84-AC70-4681-98E0-B82D357B4F6C/Documents/SharedSupport"
+      andUserPath:@"/Users/morse/Library/Developer/CoreSimulator/Devices/533802BB-B174-4780-A1F5-DF1564DBF2FC/data/Containers/Data/Application/266DEA84-AC70-4681-98E0-B82D357B4F6C/Documents/Rime"];
   
   RimeSessionId session = 0;
   while (session == 0) {

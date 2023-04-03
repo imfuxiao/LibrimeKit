@@ -69,6 +69,9 @@ static void rimeNotificationHandler(void *contextObject,
 @synthesize stagingDir;
 
 - (void)rimeTraits:(RimeTraits *)rimeTraits {
+  if (rimeTraits == NULL) {
+    return;
+  }
   if (sharedDataDir != nil) {
     rimeTraits->shared_data_dir = [sharedDataDir UTF8String];
   }
@@ -223,6 +226,10 @@ numCandidates;
     cfg = c;
   }
   return self;
+}
+
+- (void) closeConfig {
+  RimeConfigClose(&cfg);
 }
 
 - (NSString *)getString:(NSString *)key {

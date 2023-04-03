@@ -164,7 +164,7 @@
 
 - (NSArray<IRimeConfigIteratorItem *> *)getItems:(NSString *)key;
 - (NSArray<IRimeConfigIteratorItem *> *)getMapValues:(NSString *)key;
-
+- (void) closeConfig;
 @end
 
 
