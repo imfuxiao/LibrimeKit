@@ -228,7 +228,7 @@ numCandidates;
   return self;
 }
 
-- (void) closeConfig {
+- (void)closeConfig {
   RimeConfigClose(&cfg);
 }
 
@@ -487,8 +487,9 @@ numCandidates;
   @autoreleasepool {
     RIME_STRUCT(RimeStatus, rimeStatus);
     if (RimeGetStatus(session, &rimeStatus)) {
-      [status setSchemaId:@(rimeStatus.schema_id)];
-      [status setSchemaName:@(rimeStatus.schema_name)];
+      [status setSchemaId:rimeStatus.schema_id ? @(rimeStatus.schema_id) : @""];
+      [status setSchemaName:rimeStatus.schema_name ? @(rimeStatus.schema_name)
+                           : @""];
       [status setIsASCIIMode:rimeStatus.is_ascii_mode > 0];
       [status setIsASCIIPunct:rimeStatus.is_ascii_punct > 0];
       [status setIsComposing:rimeStatus.is_composing > 0];
@@ -496,6 +497,9 @@ numCandidates;
       [status setIsFullShape:rimeStatus.is_full_shape > 0];
       [status setIsSimplified:rimeStatus.is_simplified > 0];
       [status setIsTraditional:rimeStatus.is_traditional > 0];
+    } else {
+      [status setSchemaId: @""];
+      [status setSchemaName: @""];
     }
     RimeFreeStatus(&rimeStatus);
   }
