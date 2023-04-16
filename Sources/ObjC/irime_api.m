@@ -387,8 +387,8 @@ numCandidates;
   }
 }
 
-- (BOOL)processKeyCode:(int)code andSession:(RimeSessionId)session {
-  return RimeProcessKey(session, code, 0);
+- (BOOL)processKeyCode:(int)code modifier:(int)modifier andSession:(RimeSessionId)session {
+  return RimeProcessKey(session, code, modifier);
 }
 
 - (NSArray<IRimeCandidate *> *)getCandidateList:(RimeSessionId)session {

@@ -48,7 +48,7 @@ typedef uintptr_t RimeSessionId;
 
 // MARK: input and output
 - (BOOL)processKey:(NSString *)keyCode andSession:(RimeSessionId)session;
-- (BOOL)processKeyCode:(int)code andSession:(RimeSessionId)session;
+- (BOOL)processKeyCode:(int)code modifier:(int)modifier andSession:(RimeSessionId)session;
 - (NSArray<IRimeCandidate *> *)getCandidateList:(RimeSessionId)session;
 // MAKR: index从1开始
 - (NSArray<IRimeCandidate *> *)getCandidateWithIndex:(int)index
