@@ -8,7 +8,7 @@ typedef uintptr_t RimeSessionId;
 @protocol IRimeNotificationDelegate
 
 // message_type="deploy", message_value="start"
-- (void)onDelployStart;
+- (void)onDeployStart;
 
 //  message_type="deploy", message_value="success"
 - (void)onDeploySuccess;

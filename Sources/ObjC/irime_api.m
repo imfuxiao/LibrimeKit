@@ -16,7 +16,7 @@ static void rimeNotificationHandler(void *contextObject,
   if (!strcmp(messageType, "deploy")) {
     
     if (!strcmp(messageValue, "start")) {
-      [notificationDelegate onDelployStart];
+      [notificationDelegate onDeployStart];
       return;
     }
     
@@ -361,6 +361,7 @@ numCandidates;
   // check for configuration updates
   if (RimeStartMaintenance((Bool)fullCheck)) {
     // update squirrel config
+    RimeJoinMaintenanceThread();
     RimeDeployConfigFile("squirrel.yaml", "config_version");
   }
 }
