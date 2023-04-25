@@ -359,10 +359,10 @@ numCandidates;
 
 - (void)startMaintenance:(BOOL)fullCheck {
   // check for configuration updates
-  if (RimeStartMaintenance((Bool)fullCheck)) {
+  if (RimeStartMaintenance((Bool)fullCheck) && RimeIsMaintenancing()) {
     // update squirrel config
-    RimeJoinMaintenanceThread();
-    RimeDeployConfigFile("squirrel.yaml", "config_version");
+     RimeJoinMaintenanceThread();
+     RimeDeployConfigFile("squirrel.yaml", "config_version");
   }
 }
 
