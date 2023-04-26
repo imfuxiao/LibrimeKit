@@ -37,7 +37,7 @@ jobs:
           path: |
             /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/frameworks
             /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/dest
-          key: ${{ steps.cache-boost-restore.outputs.cache-primary-key }}
+          key: ${{ runner.os }}-boost
 
       - name: Build Librime
         run: |
