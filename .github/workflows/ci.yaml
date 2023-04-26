@@ -16,9 +16,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Cache Boost
-        id: cache-boost
-        uses: actions/cache@v3
+      - name: Restore Cache Boost
+        id: cache-boost-restore
+        uses: actions/cache/restore@v3
         with:
           path: |
             /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/frameworks
@@ -26,9 +26,18 @@ jobs:
           key: ${{ runner.os }}-boost
 
       - name: Build Boost
-        if: (steps.cache-boost.outputs.cache-hit != 'true')
+        if: (steps.cache-boost-restore.outputs.cache-hit != 'true')
         run: |
           make boost-build
+      
+      - name: Save Cache Boost
+        id: cache-boost-save
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/frameworks
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/dest
+          key: ${{ steps.cache-boost-restore.outputs.cache-primary-key }}
 
       - name: Build Librime
         run: |
