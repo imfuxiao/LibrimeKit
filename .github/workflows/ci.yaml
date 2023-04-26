@@ -2,10 +2,10 @@ name: Build LibrimeKit
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
   build:
@@ -16,9 +16,28 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Restore Cache Boost
+        id: cache-boost-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/frameworks
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/dest
+          key: ${{ runner.os }}-boost
+
       - name: Build Boost
+        if: (steps.cache-boost-restore.outputs.cache-hit != 'true')
         run: |
           make boost-build
+      
+      - name: Save Cache Boost
+        id: cache-boost-save
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/frameworks
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/dest
+          key: ${{ steps.cache-boost-restore.outputs.cache-primary-key }}
 
       - name: Build Librime
         run: |
@@ -35,7 +54,6 @@ jobs:
           path: Frameworks.tgz
 
       - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/v')
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -47,7 +65,6 @@ jobs:
           prerelease: false
 
       - name: Upload Release Asset
-        if: startsWith(github.ref, 'refs/tags/v')
         id: upload_release_asset
         uses: actions/upload-release-asset@v1
         env:
