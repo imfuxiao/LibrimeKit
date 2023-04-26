@@ -16,7 +16,17 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Cache Boost
+        id: cache-boost
+        uses: actions/cache@v3
+        with:
+          path: |
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/frameworks
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/dest
+          key: ${{ runner.os }}-boost
+
       - name: Build Boost
+        if: (steps.cache-boost.outputs.cache-hit != 'true')
         run: |
           make boost-build
 
