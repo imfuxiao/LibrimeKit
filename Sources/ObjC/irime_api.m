@@ -1,5 +1,6 @@
 #import "irime_api.h"
 #import "rime_api.h"
+#import "rime_levers_api.h"
 
 static id<IRimeNotificationDelegate> notificationDelegate = nil;
 
@@ -7,49 +8,49 @@ static void rimeNotificationHandler(void *contextObject,
                                     RimeSessionId sessionId,
                                     const char *messageType,
                                     const char *messageValue) {
-  
+
   if (notificationDelegate == NULL || messageValue == NULL) {
     return;
   }
-  
+
   // on deployment
   if (!strcmp(messageType, "deploy")) {
-    
+
     if (!strcmp(messageValue, "start")) {
       [notificationDelegate onDeployStart];
       return;
     }
-    
+
     if (!strcmp(messageValue, "success")) {
       [notificationDelegate onDeploySuccess];
       return;
     }
-    
+
     if (!strcmp(messageValue, "failure")) {
       [notificationDelegate onDeployFailure];
       return;
     }
-    
+
     return;
   }
-  
+
   // TODO: 对context_object处理
   //  id app_delegate = (__bridge id)context_object;
   //  if (app_delegate && ![app_delegate enableNotifications]) {
   //    return;
   //  }
-  
+
   // on loading schema
   if (!strcmp(messageType, "schema")) {
     [notificationDelegate
-     onLoadingSchema:[NSString stringWithUTF8String:messageValue]];
+        onLoadingSchema:[NSString stringWithUTF8String:messageValue]];
     return;
   }
-  
+
   // on changing mode:
   if (!strcmp(messageType, "option")) {
     [notificationDelegate
-     onChangeMode:[NSString stringWithUTF8String:messageValue]];
+        onChangeMode:[NSString stringWithUTF8String:messageValue]];
     return;
   }
 }
@@ -94,7 +95,7 @@ static void rimeNotificationHandler(void *contextObject,
   //    if (logDir != nil) {
   //      rimeTraits->log_dir = [logDir UTF8String];
   //    }
-  
+
   // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
   // 方法内数组变量在方法结束后会被释放.
   if (modules.count > 0) {
@@ -106,7 +107,7 @@ static void rimeNotificationHandler(void *contextObject,
     }
     rimeTraits->modules = tempModules;
   }
-  
+
   if (prebuiltDataDir != nil) {
     rimeTraits->prebuilt_data_dir = [prebuiltDataDir UTF8String];
   }
@@ -131,7 +132,7 @@ static void rimeNotificationHandler(void *contextObject,
 
 - (NSString *)description {
   return
-  [NSString stringWithFormat:@"id = %@, name = %@", schemaId, schemaName];
+      [NSString stringWithFormat:@"id = %@, name = %@", schemaId, schemaName];
 }
 
 @end
@@ -140,17 +141,17 @@ static void rimeNotificationHandler(void *contextObject,
 
 @synthesize schemaId, schemaName;
 @synthesize isASCIIMode, isASCIIPunct, isComposing, isDisabled, isFullShape,
-isSimplified, isTraditional;
+    isSimplified, isTraditional;
 
 - (NSString *)description {
-return
-  [NSString stringWithFormat:
-   @"<%@: %p, schemaId: %@, schemaName: %@, isASCIIMode: %d, "
-   @"isASCIIPunct: %d, isComposing: %d, isDisabled: %d, "
-   @"isFullShape: %d, isSimplified: %d, isTraditional: %d>",
-   NSStringFromClass([self class]), self, schemaId, schemaName,
-   isASCIIMode, isASCIIPunct, isComposing, isDisabled,
-   isFullShape, isSimplified, isTraditional];
+  return
+      [NSString stringWithFormat:
+                    @"<%@: %p, schemaId: %@, schemaName: %@, isASCIIMode: %d, "
+                    @"isASCIIPunct: %d, isComposing: %d, isDisabled: %d, "
+                    @"isFullShape: %d, isSimplified: %d, isTraditional: %d>",
+                    NSStringFromClass([self class]), self, schemaId, schemaName,
+                    isASCIIMode, isASCIIPunct, isComposing, isDisabled,
+                    isFullShape, isSimplified, isTraditional];
 }
 @end
 
@@ -160,8 +161,8 @@ return
 
 - (NSString *)description {
   return [NSString stringWithFormat:@"<%@: %p, text: %@, comment: %@>",
-          NSStringFromClass([self class]), self, text,
-          comment];
+                                    NSStringFromClass([self class]), self, text,
+                                    comment];
 }
 
 @end
@@ -169,19 +170,19 @@ return
 @implementation IRimeMenu
 
 @synthesize pageSize, pageNo, isLastPage, highlightedCandidateIndex,
-numCandidates;
+    numCandidates;
 @synthesize selectKeys;
 @synthesize candidates;
 
 - (NSString *)description {
   return [NSString
-          stringWithFormat:@"<%@: %p, pageSize: %d, pageNo: %d, isLastPage: %@, "
-          @"highlightedCandidateIndex: %d, numCandidates %d,"
-          @"selectKeys: %@, candidates: %@>",
-          NSStringFromClass([self class]), self, pageSize, pageNo,
-          isLastPage ? @"true" : @"false",
-          highlightedCandidateIndex, numCandidates, selectKeys,
-          candidates];
+      stringWithFormat:@"<%@: %p, pageSize: %d, pageNo: %d, isLastPage: %@, "
+                       @"highlightedCandidateIndex: %d, numCandidates %d,"
+                       @"selectKeys: %@, candidates: %@>",
+                       NSStringFromClass([self class]), self, pageSize, pageNo,
+                       isLastPage ? @"true" : @"false",
+                       highlightedCandidateIndex, numCandidates, selectKeys,
+                       candidates];
 }
 
 @end
@@ -192,10 +193,10 @@ numCandidates;
 
 - (NSString *)description {
   return
-  [NSString stringWithFormat:@"<%@: %p, length: %d, cursorPos: %d, "
-   @"selStart: %d, selEnd: %d, preedit: %@>",
-   NSStringFromClass([self class]), self, length,
-   cursorPos, selStart, selEnd, preedit];
+      [NSString stringWithFormat:@"<%@: %p, length: %d, cursorPos: %d, "
+                                 @"selStart: %d, selEnd: %d, preedit: %@>",
+                                 NSStringFromClass([self class]), self, length,
+                                 cursorPos, selStart, selEnd, preedit];
 }
 
 @end
@@ -209,10 +210,10 @@ numCandidates;
 
 - (NSString *)description {
   return
-  [NSString stringWithFormat:@"<%@: %p, commitTextPreview: %@, "
-   @"composition: %@, labels: %@, menu: %@>",
-   NSStringFromClass([self class]), self,
-   commitTextPreview, composition, labels, menu];
+      [NSString stringWithFormat:@"<%@: %p, commitTextPreview: %@, "
+                                 @"composition: %@, labels: %@, menu: %@>",
+                                 NSStringFromClass([self class]), self,
+                                 commitTextPreview, composition, labels, menu];
 }
 
 @end
@@ -322,11 +323,16 @@ numCandidates;
 
 - (NSString *)description {
   return [NSString stringWithFormat:@"<%@: %p, index: %d, key: %@, path: %@>",
-          NSStringFromClass([self class]), self,
-          index, key, path];
+                                    NSStringFromClass([self class]), self,
+                                    index, key, path];
 }
 
 @end
+
+// 获取 RimeLeversApi
+static RimeLeversApi *get_levers() {
+  return (RimeLeversApi *)(RimeFindModule("levers")->get_api());
+}
 
 // RimeEngin 实现
 
@@ -361,8 +367,8 @@ numCandidates;
   // check for configuration updates
   if (RimeStartMaintenance((Bool)fullCheck) && RimeIsMaintenancing()) {
     // update squirrel config
-     RimeJoinMaintenanceThread();
-     RimeDeployConfigFile("squirrel.yaml", "config_version");
+    RimeJoinMaintenanceThread();
+    RimeDeployConfigFile("squirrel.yaml", "config_version");
   }
 }
 
@@ -388,7 +394,9 @@ numCandidates;
   }
 }
 
-- (BOOL)processKeyCode:(int)code modifier:(int)modifier andSession:(RimeSessionId)session {
+- (BOOL)processKeyCode:(int)code
+              modifier:(int)modifier
+            andSession:(RimeSessionId)session {
   return RimeProcessKey(session, code, modifier);
 }
 
@@ -398,14 +406,14 @@ numCandidates;
     if (!RimeCandidateListBegin(session, &iterator)) {
       return [NSArray array];
     }
-    
+
     NSMutableArray<IRimeCandidate *> *list = [NSMutableArray array];
     while (RimeCandidateListNext(&iterator)) {
       IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
       [candidate setText:@(iterator.candidate.text)];
       [candidate setComment:iterator.candidate.comment
-       ? @(iterator.candidate.comment)
-                           : @""];
+                                ? @(iterator.candidate.comment)
+                                : @""];
       [list addObject:candidate];
     }
     RimeCandidateListEnd(&iterator);
@@ -424,19 +432,19 @@ numCandidates;
 #endif
       return [NSArray array];
     }
-    
+
     NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray array];
     int maxIndex = index + count;
     while (RimeCandidateListNext(&iterator)) {
       if (iterator.index >= maxIndex) {
         break;
       }
-      
+
       IRimeCandidate *candidate = [[IRimeCandidate alloc] init];
       [candidate setText:@(iterator.candidate.text)];
       [candidate setComment:iterator.candidate.comment
-       ? @(iterator.candidate.comment)
-                           : @""];
+                                ? @(iterator.candidate.comment)
+                                : @""];
       [candidates addObject:candidate];
     }
     RimeCandidateListEnd(&iterator);
@@ -490,7 +498,7 @@ numCandidates;
     if (RimeGetStatus(session, &rimeStatus)) {
       [status setSchemaId:rimeStatus.schema_id ? @(rimeStatus.schema_id) : @""];
       [status setSchemaName:rimeStatus.schema_name ? @(rimeStatus.schema_name)
-                           : @""];
+                                                   : @""];
       [status setIsASCIIMode:rimeStatus.is_ascii_mode > 0];
       [status setIsASCIIPunct:rimeStatus.is_ascii_punct > 0];
       [status setIsComposing:rimeStatus.is_composing > 0];
@@ -499,8 +507,8 @@ numCandidates;
       [status setIsSimplified:rimeStatus.is_simplified > 0];
       [status setIsTraditional:rimeStatus.is_traditional > 0];
     } else {
-      [status setSchemaId: @""];
-      [status setSchemaName: @""];
+      [status setSchemaId:@""];
+      [status setSchemaName:@""];
     }
     RimeFreeStatus(&rimeStatus);
   }
@@ -509,15 +517,15 @@ numCandidates;
 
 - (IRimeContext *)getContext:(RimeSessionId)session {
   IRimeContext *context = [[IRimeContext alloc] init];
-  
+
   @autoreleasepool {
     RIME_STRUCT(RimeContext, ctx);
     if (RimeGetContext(session, &ctx)) {
-      
+
       const char *candidatePreview = ctx.commit_text_preview;
       [context
-       setCommitTextPreview:candidatePreview ? @(candidatePreview) : @""];
-      
+          setCommitTextPreview:candidatePreview ? @(candidatePreview) : @""];
+
       // composition
       IRimeComposition *composition = [[IRimeComposition alloc] init];
       [composition setLength:ctx.composition.length];
@@ -527,7 +535,7 @@ numCandidates;
       const char *preedit = ctx.composition.preedit;
       [composition setPreedit:preedit ? @(preedit) : @""];
       [context setComposition:composition];
-      
+
       // 这里为了性能考虑, 先屏蔽
       // lables
       //      if (ctx.select_labels) {
@@ -540,7 +548,7 @@ numCandidates;
       //      } else {
       //        [context setLabels:@[]];
       //      }
-      
+
       // menu
       IRimeMenu *menu = [[IRimeMenu alloc] init];
       [menu setPageNo:ctx.menu.page_no];
@@ -549,7 +557,7 @@ numCandidates;
       [menu setHighlightedCandidateIndex:ctx.menu.highlighted_candidate_index];
       [menu setNumCandidates:ctx.menu.num_candidates];
       [menu setSelectKeys:ctx.menu.select_keys ? @(ctx.menu.select_keys) : @""];
-      
+
       // 分页不在使用context, 这里为了性能考虑, 先屏蔽
       //      NSMutableArray<IRimeCandidate *> *candidates = [NSMutableArray
       //      array]; for (int i = 0; i < ctx.menu.num_candidates; i++) {
@@ -570,22 +578,20 @@ numCandidates;
 
 // MARK: Schema
 - (NSArray<IRimeSchema *> *)schemaList {
-  @autoreleasepool {
-    RimeSchemaList list;
-    if (RimeGetSchemaList(&list)) {
-      size_t count = list.size;
-      NSMutableArray *r = [NSMutableArray arrayWithCapacity:count];
-      RimeSchemaListItem *items = list.list;
-      for (int i = 0; i < count; i++) {
-        RimeSchemaListItem item = items[i];
-        [r addObject:[[IRimeSchema alloc] initWithSchemaId:@(item.schema_id)
-                                             andSchemaName:@(item.name)]];
-      }
-      RimeFreeSchemaList(&list);
-      return [NSArray arrayWithArray:r];
+  RimeSchemaList list = {0};
+  if (RimeGetSchemaList(&list)) {
+    size_t count = list.size;
+    NSMutableArray *r = [NSMutableArray arrayWithCapacity:count];
+    RimeSchemaListItem *items = list.list;
+    for (int i = 0; i < count; i++) {
+      RimeSchemaListItem item = items[i];
+      [r addObject:[[IRimeSchema alloc] initWithSchemaId:@(item.schema_id)
+                                           andSchemaName:@(item.name)]];
     }
-    return nil;
+    RimeFreeSchemaList(&list);
+    return [NSArray arrayWithArray:r];
   }
+  return [NSArray array];
 }
 
 - (IRimeSchema *)currentSchema:(RimeSessionId)session {
@@ -645,5 +651,92 @@ numCandidates;
   const char *codes = [keys UTF8String];
   RimeSimulateKeySequence(session, codes);
 }
+
+- (NSArray<IRimeSchema *> *)getAvailableRimeSchemaList {
+  NSMutableArray *r = [NSMutableArray array];
+  @autoreleasepool {
+    RimeLeversApi *levers = get_levers();
+    RimeSwitcherSettings *switcher = levers->switcher_settings_init();
+    RimeSchemaList list = {0};
+    levers->load_settings((RimeCustomSettings *)switcher);
+    levers->get_available_schema_list(switcher, &list);
+
+    size_t count = list.size;
+    RimeSchemaListItem *items = list.list;
+    for (int i = 0; i < count; i++) {
+      RimeSchemaListItem item = items[i];
+      [r addObject:[[IRimeSchema alloc] initWithSchemaId:@(item.schema_id)
+                                           andSchemaName:@(item.name)]];
+    }
+
+    levers->schema_list_destroy(&list);
+    levers->custom_settings_destroy((RimeCustomSettings *)switcher);
+  }
+  return [NSArray arrayWithArray:r];
+}
+
+- (NSArray<IRimeSchema *> *)getSelectedRimeSchemaList {
+  NSMutableArray *r = [NSMutableArray array];
+
+  @autoreleasepool {
+    RimeLeversApi *levers = get_levers();
+    RimeSwitcherSettings *switcher = levers->switcher_settings_init();
+    RimeSchemaList list = {0};
+    levers->load_settings((RimeCustomSettings *)switcher);
+    levers->get_selected_schema_list(switcher, &list);
+
+    size_t count = list.size;
+    RimeSchemaListItem *items = list.list;
+    for (int i = 0; i < count; i++) {
+      RimeSchemaListItem item = items[i];
+      [r addObject:[[IRimeSchema alloc]
+                       initWithSchemaId:@(item.schema_id)
+                          andSchemaName:item.name ? @(item.name) : @""]];
+    }
+
+    levers->schema_list_destroy(&list);
+    levers->custom_settings_destroy((RimeCustomSettings *)switcher);
+  }
+
+  return [NSArray arrayWithArray:r];
+}
+
+- (BOOL)selectRimeSchemas:(NSArray<NSString *> *)schemas {
+  @autoreleasepool {
+    int count = (int)schemas.count;
+    const char *entries[count];
+    for (int i = 0; i < count; i++) {
+      entries[i] = [schemas[i] UTF8String];
+    }
+
+    RimeLeversApi *levers = get_levers();
+    RimeSwitcherSettings *switcher = levers->switcher_settings_init();
+    levers->load_settings((RimeCustomSettings *)switcher);
+    BOOL handled = levers->select_schemas(switcher, entries, count);
+    levers->save_settings((RimeCustomSettings *)switcher);
+    levers->custom_settings_destroy((RimeCustomSettings *)switcher);
+    return handled;
+  }
+}
+
+- (NSString *)getHotkeys {
+  RimeLeversApi *levers = get_levers();
+  RimeSwitcherSettings *switcher = levers->switcher_settings_init();
+  levers->load_settings((RimeCustomSettings *)switcher);
+  const char *hotkeys = levers->get_hotkeys(switcher);
+  NSString *key = hotkeys ? [NSString stringWithUTF8String:hotkeys] : @"";
+  levers->custom_settings_destroy((RimeCustomSettings *)switcher);
+  return key;
+}
+
+- (BOOL) isFirstRun {
+  RimeLeversApi *levers = get_levers();
+  RimeSwitcherSettings *switcher = levers->switcher_settings_init();
+  levers->load_settings((RimeCustomSettings *)switcher);
+  BOOL isFirstRun = levers->is_first_run((RimeCustomSettings *)switcher);
+  levers->custom_settings_destroy((RimeCustomSettings *)switcher);
+  return isFirstRun;
+}
+
 
 @end

@@ -50,11 +50,9 @@ typedef uintptr_t RimeSessionId;
 - (BOOL)processKey:(NSString *)keyCode andSession:(RimeSessionId)session;
 - (BOOL)processKeyCode:(int)code modifier:(int)modifier andSession:(RimeSessionId)session;
 - (NSArray<IRimeCandidate *> *)getCandidateList:(RimeSessionId)session;
-// MAKR: index从1开始
 - (NSArray<IRimeCandidate *> *)getCandidateWithIndex:(int)index
                                             andCount:(int)limit
                                           andSession:(RimeSessionId)session;
-// MAKR: index从1开始
 - (BOOL)selectCandidate:(RimeSessionId)session andIndex:(int)index;
 - (BOOL)deleteCandidate:(RimeSessionId)session andIndex:(int)index;
 
@@ -82,4 +80,16 @@ typedef uintptr_t RimeSessionId;
 
 // MARK: Debug
 - (void)simulateKeySequence:(NSString *)keys andSession:(RimeSessionId)session;
+
+
+// MARK: customer settings
+// 注意：用户目录必须存在 "default.coustom.yaml" 文件，调用才有效
+- (NSArray<IRimeSchema *> *)getAvailableRimeSchemaList;
+// 在通过 `selectRimeSchemas` api设置完毕后，必须重启rime才能生效
+// 即： 调用 [rimeAPI startMaintenance: true]; 必须为true
+- (NSArray<IRimeSchema *> *)getSelectedRimeSchemaList;
+- (BOOL)selectRimeSchemas:(NSArray<NSString *> *)schemas;
+- (NSString *) getHotkeys;
+- (BOOL) isFirstRun;
+
 @end

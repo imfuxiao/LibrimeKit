@@ -26,7 +26,7 @@ static NSString *userDirectoryName = @"user";
   NSLog(@"rime notifition: change mode: %@", mode);
 }
 
-- (void)onDelployStart {
+- (void)onDeployStart {
   NSLog(@"rime notifition: deploy start");
 }
 
@@ -123,127 +123,25 @@ withIntermediateDirectories:TRUE
   return api;
 }
 
-- (void)testCandidateWithIndexAndCount {
+- (void)testRimeAPI {
   IRimeAPI *rimeAPI = [self startRime];
   RimeSessionId session = 0;
   while (session == 0) {
     session = [rimeAPI createSession];
   }
-  
   XCTAssertTrue(session > 0);
   
-  [rimeAPI processKey:@"w" andSession:session];
-  [rimeAPI processKeyCode:QuoteLeft andSession:session];
-  IRimeContext *ctx = [rimeAPI getContext:session];
-  
-  for (IRimeCandidate *candidate in [[ctx menu] candidates]) {
-    NSLog(@"ctx text = %@, comment = %@", [candidate text],
-          [candidate comment]);
+  NSArray<IRimeSchema *> *list = [rimeAPI schemaList];
+  for (IRimeSchema *schema in list) {
+    NSLog(@"schemaId = %@, schemaName = %@", schema.schemaId, schema.schemaName);
   }
-  
-  int count = 5;
-  for (int i = 0; i < ctx.menu.pageSize; i++) {
-    for (IRimeCandidate *candidate in ctx.menu.candidates) {
-      NSLog(@"text = %@, comment = %@", [candidate text], [candidate comment]);
-    }
-  }
-}
-
-- (void)testInputKeys {
-  IRimeAPI *api = [self startRime];
-  RimeSessionId session = 0;
-  while (session == 0) {
-    session = [api createSession];
-  }
-  
-  [api processKey:@"w" andSession:session];
-  [api processKey:@"o" andSession:session];
-  [api processKey:@"r" andSession:session];
-  [api processKeyCode:QuoteLeft andSession:session];
-  NSArray<IRimeCandidate *> *candidates = [api getCandidateList:session];
-  XCTAssertNotNil(candidates);
-  XCTAssertTrue([@"倭" isEqual:candidates[0].text]);
-  [api cleanComposition:session];
-}
-
-- (void)testSchemaList {
-  IRimeAPI *rimeAPI =
-  [self startRime:@"/Users/morse/Library/Developer/CoreSimulator/Devices/533802BB-B174-4780-A1F5-DF1564DBF2FC/data/Containers/Data/Application/266DEA84-AC70-4681-98E0-B82D357B4F6C/Documents/SharedSupport"
-      andUserPath:@"/Users/morse/Library/Developer/CoreSimulator/Devices/533802BB-B174-4780-A1F5-DF1564DBF2FC/data/Containers/Data/Application/266DEA84-AC70-4681-98E0-B82D357B4F6C/Documents/Rime"];
-  
-  RimeSessionId session = 0;
-  while (session == 0) {
-    session = [rimeAPI createSession];
-  }
-  
-  // 选择输入法并设置分页大小.
-  IRimeConfig *config = [rimeAPI openSchema:@"clover"];
-  [config setInt:@"menu/page_size" value:20];
-  int pageSize = [config getInt:@"menu/page_size"];
-  NSLog(@"\n \n test pageSize: %d ", pageSize);
-  
-  NSLog(@"\n schema list: %@", [rimeAPI schemaList]);
-  
-  [rimeAPI selectSchema:session andSchameId:@"clover"];
-  
-  IRimeSchema *currentSchema = [rimeAPI currentSchema:session];
-  NSLog(@"current schemaName: %@, schemaId: %@", [currentSchema schemaName],
-        [currentSchema schemaId]);
-  
-  [rimeAPI processKey:@"w" andSession:session];
-  [rimeAPI processKey:@"o" andSession:session];
-  [rimeAPI processKey:@"a" andSession:session];
-  [rimeAPI processKey:@"i" andSession:session];
-  [rimeAPI processKey:@"c" andSession:session];
-  [rimeAPI processKey:@"h" andSession:session];
-  [rimeAPI processKey:@"i" andSession:session];
-  [rimeAPI processKey:@"m" andSession:session];
-  [rimeAPI processKey:@"i" andSession:session];
-  [rimeAPI processKey:@"a" andSession:session];
-  [rimeAPI processKey:@"n" andSession:session];
+  XCTAssertTrue(list.count > 0);
   
   
-  IRimeContext *ctx = [rimeAPI getContext:session];
-  NSLog(@"ctx composition preeidt: %@", ctx.composition.preedit);
-  NSArray<IRimeCandidate *> *candidates = [rimeAPI getCandidateList: session];
-//  NSArray<IRimeCandidate *> *candidates = [rimeAPI getCandidateWithIndex:1 andCount:20 andSession:session];
-  for (IRimeCandidate *c in candidates) {
-    NSLog(@"ctx composition: %@", c);
-  }
-  
-//  IRimeStatus *status = [rimeAPI getStatus:session];
-//  NSLog(@"status: %@", status);
-//
-//  // 翻页
-//  candidates = [rimeAPI getCandidateWithIndex:21 andCount:20 andSession:session];
-//  for (IRimeCandidate *c in candidates) {
-//    NSLog(@"ctx composition: %@", c);
-//  }
-//
-//  // 选择第2页下标
-//  [rimeAPI selectCandidate: session andIndex: 40];
-//  ctx = [rimeAPI getContext:session];
-//  NSLog(@"ctx composition preedit: %@", ctx.composition.preedit);
-//
-//  // 删除选择字
-//  [rimeAPI processKeyCode:0xff08 andSession:session];
-//  ctx = [rimeAPI getContext:session];
-//  NSLog(@"ctx composition preedit: %@", ctx.composition.preedit);
-//  candidates = [rimeAPI getCandidateWithIndex:1 andCount:20 andSession:session];
-//  for (IRimeCandidate *c in candidates) {
-//    NSLog(@"ctx composition: %@", c);
-//  }
-  
-//  status = [rimeAPI getStatus:session];
-//  NSLog(@"status: %@", status);
-//
-//    [rimeAPI processKeyCode: 0xFF56 andSession:session];
-  
-  // 变更schema
-  //  XCTAssertTrue([api selectSchema:@"cangjie5"]);
-  //  currentSchema = [api currentSchema];
-  //  NSLog(@"current schemaName: %@, schemaId: %@", [currentSchema schemaName],
-  //        [currentSchema schemaId]);
+  [rimeAPI processKey:@"`" andSession:session];
+  NSArray<IRimeCandidate* > *candidates = [rimeAPI getCandidateList: session];
+  XCTAssertTrue(candidates.count > 0);
+  NSLog(@"candidates[0].text = %@", candidates[0].text);
 }
 
 - (void)testConfigValue {
@@ -252,39 +150,59 @@ withIntermediateDirectories:TRUE
   while (session == 0) {
     session = [rimeAPI createSession];
   }
-  IRimeConfig *schemaConfig = [rimeAPI openSchema:@"flypy"];
+  IRimeConfig *schemaConfig = [rimeAPI openSchema:@"bopomofo"];
   XCTAssertNotNil(schemaConfig);
   
-  NSString *value = [schemaConfig getString:@"schema/version"];
-  NSLog(@"schema/version: %@", value);
-  XCTAssertTrue([@"10.9.3" isEqual:value]);
+  NSString *value = [schemaConfig getString:@"schema/schema_id"];
+  NSLog(@"schema/schema_id: %@", value);
+  XCTAssertTrue([@"bopomofo" isEqual:value]);
+}
+
+-(void) testLevelsAPI {
+  IRimeAPI *rimeAPI = [self startRime];
+  NSArray<IRimeSchema *> *schemas = [rimeAPI schemaList];
+  for (IRimeSchema *schema in schemas) {
+    NSLog(@"rime schemas schema_id %@, schema_name %@", schema.schemaId, schema.schemaName);
+  }
+  XCTAssertTrue(schemas.count > 0);
   
-  int historySize = [schemaConfig getInt:@"history/size"];
-  NSLog(@"history/size: %d", historySize);
-  XCTAssertTrue(historySize == 1);
+  NSLog(@"rime is first run: %@", [rimeAPI isFirstRun] ? @"True" : @"False");
   
-  IRimeConfig *config = [rimeAPI openConfig:@"squirrel"];
-  XCTAssertNotNil(config);
-  
-  BOOL usKeyboardLayout = [config getBool:@"us_keyboard_layout"];
-  XCTAssertTrue(usKeyboardLayout);
-  
-  double chordDuration = [config getDouble:@"chord_duration"];
-  XCTAssertTrue(chordDuration == 0.1);
-  
-  // 获取系统全部配色map值
-  NSArray<IRimeConfigIteratorItem *> *items =
-  [config getMapValues:@"preset_color_schemes"];
-  XCTAssertNotNil(items);
-  for (IRimeConfigIteratorItem *item in items) {
-    NSLog(@"color schema: %@", item);
+  NSArray<NSString *> *selectSchemas = @[@"stroke"];
+  for (NSString *schemaId in selectSchemas) {
+    NSLog(@"rime pre set schema_id %@", schemaId);
   }
   
-  // 多重path使用/分隔
-  // 获取当前配色名称
-  value = [config getString:@"style/color_scheme"];
-  NSLog(@"color_scheme: %@", value);
-  XCTAssertTrue([@"metro" isEqual:value], @"color_scheme is: %@", value);
+  // 重置完需要重启rime
+  BOOL handled = [rimeAPI selectRimeSchemas: selectSchemas];
+  NSLog(@"selectRimeSchema handled: %@", handled ? @"true" : @"false");
+  
+  [rimeAPI startMaintenance: true];
+  NSLog(@"rime is first run: %@", [rimeAPI isFirstRun] ? @"True" : @"False");
+  
+  NSArray<IRimeSchema *> *availableSchemas = [rimeAPI getAvailableRimeSchemaList];
+  XCTAssertTrue(availableSchemas.count > 0);
+  for (IRimeSchema *schema in availableSchemas) {
+    NSLog(@"available schema_id %@, schema_name %@", schema.schemaId, schema.schemaName);
+  }
+  
+  NSArray<IRimeSchema *> *getSelectRimeSchemaList = [rimeAPI getSelectedRimeSchemaList];
+  XCTAssertTrue(getSelectRimeSchemaList.count > 0);
+  for (IRimeSchema *schema in getSelectRimeSchemaList) {
+    NSLog(@"getSelectRimeSchemaList schema_id %@, schema_name %@", schema.schemaId, schema.schemaName);
+  }
+}
+
+-(void) testHotKey {
+  IRimeAPI *rimeAPI = [self startRime];
+  NSArray<IRimeSchema *> *getSelectRimeSchemaList = [rimeAPI getSelectedRimeSchemaList];
+  XCTAssertTrue(getSelectRimeSchemaList.count > 0);
+  for (IRimeSchema *schema in getSelectRimeSchemaList) {
+    NSLog(@"getSelectRimeSchemaList schema_id %@, schema_name %@", schema.schemaId, schema.schemaName);
+  }
+  NSString *hotkeys = [rimeAPI getHotkeys];
+  XCTAssertTrue(hotkeys.length > 0);
+  NSLog(@"hotkeys: %@", hotkeys);
 }
 
 - (void)testPerformanceExample {
