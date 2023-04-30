@@ -39,6 +39,10 @@ typedef uintptr_t RimeSessionId;
 
 - (void)startMaintenance:(BOOL)fullCheck;
 
+- (BOOL)preBuildAllSchemas;
+- (void)deployerInitialize:(IRimeTraits *)traits;
+- (BOOL)deploy;
+
 - (void)syncUserData;
 
 // Session management
@@ -66,7 +70,7 @@ typedef uintptr_t RimeSessionId;
 // MARK: schema
 - (NSArray<IRimeSchema *> *)schemaList;
 - (IRimeSchema *)currentSchema:(RimeSessionId)session;
-- (BOOL)selectSchema:(RimeSessionId)session andSchameId:(NSString *)schemaId;
+- (BOOL)selectSchema:(RimeSessionId)session andSchemaId:(NSString *)schemaId;
 
 // MARK: Configuration
 - (BOOL)getOption:(RimeSessionId)session andOption:(NSString *)option;

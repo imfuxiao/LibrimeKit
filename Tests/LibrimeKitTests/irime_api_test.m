@@ -118,8 +118,11 @@ withIntermediateDirectories:TRUE
   IRimeAPI *api = [[IRimeAPI alloc] init];
   [api setNotificationDelegate:self];
   [api setup:traits];
+  [api preBuildAllSchemas];
   [api initialize:traits];
-  [api startMaintenance:true];
+  RimeSessionId session =  [api createSession];
+  printf(@"session %lu", session);
+//  [api startMaintenance:true];
   return api;
 }
 
@@ -130,6 +133,12 @@ withIntermediateDirectories:TRUE
     session = [rimeAPI createSession];
   }
   XCTAssertTrue(session > 0);
+  
+  IRimeStatus *state = [rimeAPI getStatus:session];
+  printf("state: %@", state);
+  [rimeAPI selectSchema:session andSchemaId:@"stroke"];
+  state = [rimeAPI getStatus:session];
+  printf("state: %@", state);
   
   NSArray<IRimeSchema *> *list = [rimeAPI schemaList];
   for (IRimeSchema *schema in list) {

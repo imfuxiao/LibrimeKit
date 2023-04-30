@@ -372,6 +372,24 @@ static RimeLeversApi *get_levers() {
   }
 }
 
+- (BOOL)preBuildAllSchemas {
+  return RimePrebuildAllSchemas();
+}
+
+- (void)deployerInitialize:(IRimeTraits *)traits {
+  if (traits == nil) {
+    RimeDeployerInitialize(NULL);
+  } else {
+    RIME_STRUCT(RimeTraits, rimeTraits);
+    [traits rimeTraits:&rimeTraits];
+    RimeDeployerInitialize(&rimeTraits);
+  }
+}
+
+- (BOOL)deploy {
+  return rime_get_api()->deploy();
+}
+
 - (void)syncUserData {
   RimeSyncUserData();
 }
@@ -607,7 +625,7 @@ static RimeLeversApi *get_levers() {
   }
 }
 
-- (BOOL)selectSchema:(RimeSessionId)session andSchameId:(NSString *)schemaId {
+- (BOOL)selectSchema:(RimeSessionId)session andSchemaId:(NSString *)schemaId {
   return RimeSelectSchema(session, [schemaId UTF8String]);
 }
 
