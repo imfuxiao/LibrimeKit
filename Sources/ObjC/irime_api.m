@@ -69,50 +69,40 @@ static void rimeNotificationHandler(void *contextObject,
 @synthesize prebuiltDataDir;
 @synthesize stagingDir;
 
-- (void)rimeTraits:(RimeTraits *)rimeTraits {
-  if (rimeTraits == NULL) {
-    return;
-  }
+- (void)rimeTraits:(RimeTraits *)traits {
   if (sharedDataDir != nil) {
-    rimeTraits->shared_data_dir = [sharedDataDir UTF8String];
+    traits -> shared_data_dir = [sharedDataDir UTF8String];
   }
   if (userDataDir != nil) {
-    rimeTraits->user_data_dir = [userDataDir UTF8String];
+    traits -> user_data_dir = [userDataDir UTF8String];
   }
   if (distributionName != nil) {
-    rimeTraits->distribution_name = [distributionName UTF8String];
+    traits -> distribution_name = [distributionName UTF8String];
   }
   if (distributionCodeName != nil) {
-    rimeTraits->distribution_code_name = [distributionCodeName UTF8String];
+    traits -> distribution_code_name = [distributionCodeName UTF8String];
   }
   if (distributionVersion != nil) {
-    rimeTraits->distribution_version = [distributionVersion UTF8String];
+    traits -> distribution_version = [distributionVersion UTF8String];
   }
   if (appName != nil) {
-    rimeTraits->app_name = [appName UTF8String];
+    traits -> app_name = [appName UTF8String];
   }
-  //    rimeTraits->min_log_level = minLogLevel;
-  //    if (logDir != nil) {
-  //      rimeTraits->log_dir = [logDir UTF8String];
-  //    }
-
-  // MARK: 需要在调用rimeTraits方法前先分配好module数组的空间大小,
-  // 方法内数组变量在方法结束后会被释放.
+  
   if (modules.count > 0) {
     NSUInteger count = [modules count];
-    const char *tempModules[count + 1];
-    tempModules[count] = NULL;
+    const char **tempModules = malloc(sizeof(char *) * count);
     for (int i = 0; i < count; i++) {
       tempModules[i] = [modules[i] UTF8String];
     }
-    rimeTraits->modules = tempModules;
+    traits -> modules = tempModules;
   }
-
+  
   if (prebuiltDataDir != nil) {
-    rimeTraits->prebuilt_data_dir = [prebuiltDataDir UTF8String];
+    traits -> prebuilt_data_dir = [prebuiltDataDir UTF8String];
   }
   if (stagingDir != nil) {
-    rimeTraits->staging_dir = [stagingDir UTF8String];
+    traits -> staging_dir = [stagingDir UTF8String];
   }
 }
 
@@ -347,6 +337,9 @@ static RimeLeversApi *get_levers() {
   RIME_STRUCT(RimeTraits, rimeTraits);
   [traits rimeTraits:&rimeTraits];
   RimeSetup(&rimeTraits);
+  if ([traits.modules count] > 0) {
+    free(rimeTraits.modules);
+  }
 }
 
 - (void)initialize:(IRimeTraits *)traits {
@@ -356,6 +349,9 @@ static RimeLeversApi *get_levers() {
     RIME_STRUCT(RimeTraits, rimeTraits);
     [traits rimeTraits:&rimeTraits];
     RimeInitialize(&rimeTraits);
+    if ([traits.modules count] > 0) {
+      free(rimeTraits.modules);
+    }
   }
 }
 
@@ -383,11 +379,19 @@ static RimeLeversApi *get_levers() {
     RIME_STRUCT(RimeTraits, rimeTraits);
     [traits rimeTraits:&rimeTraits];
     RimeDeployerInitialize(&rimeTraits);
+    if ([traits.modules count] > 0) {
+      free(rimeTraits.modules);
+    }
   }
 }
 
 - (BOOL)deploy {
   return rime_get_api()->deploy();
+}
+
+// 对应lever/下deployment_task
+- (BOOL)runTask:(NSString *)taskName {
+  return RimeRunTask([taskName UTF8String]);
 }
 
 - (void)syncUserData {
@@ -397,9 +401,15 @@ static RimeLeversApi *get_levers() {
 - (RimeSessionId)createSession {
   return RimeCreateSession();
 }
+
 - (BOOL)findSession:(RimeSessionId)session {
   return RimeFindSession(session);
 }
+
+- (BOOL)destroySession:(RimeSessionId)session {
+  return RimeDestroySession(session);
+}
+
 - (void)cleanAllSession {
   RimeCleanupAllSessions();
 }

@@ -43,11 +43,13 @@ typedef uintptr_t RimeSessionId;
 - (void)deployerInitialize:(IRimeTraits *)traits;
 - (BOOL)deploy;
 
+- (BOOL)runTask:(NSString *)taskName;
 - (void)syncUserData;
 
 // Session management
 - (RimeSessionId)createSession;
 - (BOOL)findSession:(RimeSessionId)session;
+- (BOOL)destroySession:(RimeSessionId)session;
 - (void)cleanAllSession;
 
 // MARK: input and output
