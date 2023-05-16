@@ -4,6 +4,9 @@
 
 static id<IRimeNotificationDelegate> notificationDelegate = nil;
 
+// 定义加载模块
+// static RIME_MODULE_LIST(hamster_modules, "default", "levers", "lua");
+
 static void rimeNotificationHandler(void *contextObject,
                                     RimeSessionId sessionId,
                                     const char *messageType,
@@ -69,6 +72,7 @@ static void rimeNotificationHandler(void *contextObject,
 @synthesize prebuiltDataDir;
 @synthesize stagingDir;
 
+
 - (void)rimeTraits:(RimeTraits *)traits {
   if (sharedDataDir != nil) {
     traits -> shared_data_dir = [sharedDataDir UTF8String];
@@ -88,16 +92,8 @@ static void rimeNotificationHandler(void *contextObject,
   if (appName != nil) {
     traits -> app_name = [appName UTF8String];
   }
-  
-  if (modules.count > 0) {
-    NSUInteger count = [modules count];
-    const char **tempModules = malloc(sizeof(char *) * count);
-    for (int i = 0; i < count; i++) {
-      tempModules[i] = [modules[i] UTF8String];
-    }
-    traits -> modules = tempModules;
-  }
-  
+  // 模块定义
+  // traits -> modules = hamster_modules;
   if (prebuiltDataDir != nil) {
     traits -> prebuilt_data_dir = [prebuiltDataDir UTF8String];
   }
@@ -337,9 +333,6 @@ static RimeLeversApi *get_levers() {
   RIME_STRUCT(RimeTraits, rimeTraits);
   [traits rimeTraits:&rimeTraits];
   RimeSetup(&rimeTraits);
-  if ([traits.modules count] > 0) {
-    free(rimeTraits.modules);
-  }
 }
 
 - (void)initialize:(IRimeTraits *)traits {
@@ -349,9 +342,6 @@ static RimeLeversApi *get_levers() {
     RIME_STRUCT(RimeTraits, rimeTraits);
     [traits rimeTraits:&rimeTraits];
     RimeInitialize(&rimeTraits);
-    if ([traits.modules count] > 0) {
-      free(rimeTraits.modules);
-    }
   }
 }
 
@@ -379,9 +369,6 @@ static RimeLeversApi *get_levers() {
     RIME_STRUCT(RimeTraits, rimeTraits);
     [traits rimeTraits:&rimeTraits];
     RimeDeployerInitialize(&rimeTraits);
-    if ([traits.modules count] > 0) {
-      free(rimeTraits.modules);
-    }
   }
 }
 
