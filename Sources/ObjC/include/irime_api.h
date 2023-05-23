@@ -44,7 +44,7 @@ typedef uintptr_t RimeSessionId;
 - (BOOL)deploy;
 
 - (BOOL)runTask:(NSString *)taskName;
-- (void)syncUserData;
+- (BOOL)syncUserData;
 
 // Session management
 - (RimeSessionId)createSession;

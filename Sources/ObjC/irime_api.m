@@ -381,8 +381,8 @@ static RimeLeversApi *get_levers() {
   return RimeRunTask([taskName UTF8String]);
 }
 
-- (void)syncUserData {
-  RimeSyncUserData();
+- (BOOL)syncUserData {
+  return RimeSyncUserData();
 }
 
 - (RimeSessionId)createSession {
