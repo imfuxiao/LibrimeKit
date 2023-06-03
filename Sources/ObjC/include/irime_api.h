@@ -76,17 +76,15 @@ typedef uintptr_t RimeSessionId;
 
 // MARK: Configuration
 - (BOOL)getOption:(RimeSessionId)session andOption:(NSString *)option;
-- (BOOL)setOption:(RimeSessionId)session
-        andOption:(NSString *)option
-         andValue:(BOOL)value;
+- (BOOL)setOption:(RimeSessionId)session andOption:(NSString *)option andValue:(BOOL)value;
 // open <schema_id>.schema.yaml
 - (IRimeConfig *)openSchema:(NSString *)schemaId;
 // open <config_id>.yaml
 - (IRimeConfig *)openConfig:(NSString *)configId;
-
+// access config files in user data directory, eg. user.yaml and installation.yaml
+- (IRimeConfig *)openUserConfig:(NSString *)configId;
 // MARK: Debug
 - (void)simulateKeySequence:(NSString *)keys andSession:(RimeSessionId)session;
-
 
 // MARK: customer settings
 // 注意：用户目录必须存在 "default.coustom.yaml" 文件，调用才有效
@@ -97,5 +95,7 @@ typedef uintptr_t RimeSessionId;
 - (BOOL)selectRimeSchemas:(NSArray<NSString *> *)schemas;
 - (NSString *) getHotkeys;
 - (BOOL) isFirstRun;
-
+- (BOOL) customize:(NSString *)key boolValue:(BOOL) value;
+- (BOOL) customize:(NSString *)key stringValue:(NSString *) value;
+- (NSString *) getCustomize:(NSString *)key;
 @end

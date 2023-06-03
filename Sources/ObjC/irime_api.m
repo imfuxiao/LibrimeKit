@@ -661,6 +661,17 @@ static RimeLeversApi *get_levers() {
   return cfg;
 }
 
+- (IRimeConfig *)openUserConfig:(NSString *)configId {
+  IRimeConfig *cfg;
+  @autoreleasepool {
+    RimeConfig config;
+    if (!!RimeUserConfigOpen([configId UTF8String], &config)) {
+      cfg = [[IRimeConfig alloc] initWithRimeConfig:config];
+    }
+  }
+  return cfg;
+}
+
 - (void)simulateKeySequence:(NSString *)keys andSession:(RimeSessionId)session {
   NSLog(@"input keys = %@", keys);
   const char *codes = [keys UTF8String];
@@ -753,5 +764,39 @@ static RimeLeversApi *get_levers() {
   return isFirstRun;
 }
 
+- (BOOL) customize:(NSString *)key boolValue:(BOOL) value {
+  RimeLeversApi *levers = get_levers();
+  RimeCustomSettings *switcher = (RimeCustomSettings *)(levers->switcher_settings_init());
+  BOOL handled = False;
+  if (levers->customize_bool(switcher, [key UTF8String], value)) {
+    handled = levers->save_settings(switcher);
+  }
+  levers->custom_settings_destroy(switcher);
+  return handled;
+}
+
+- (BOOL) customize:(NSString *)key stringValue:(NSString *) value {
+  RimeLeversApi *levers = get_levers();
+  RimeCustomSettings *switcher = (RimeCustomSettings *)(levers->switcher_settings_init());
+  BOOL handled = False;
+  if (levers->customize_string(switcher, [key UTF8String], [value UTF8String])) {
+    handled = levers->save_settings(switcher);
+  }
+  levers->custom_settings_destroy(switcher);
+  return handled;
+}
+
+- (NSString *) getCustomize:(NSString *)key {
+  NSString *value = NULL;
+  RimeConfig config;
+  if (RimeUserConfigOpen([@"default.custom" UTF8String], &config)) {
+    const char *c = RimeConfigGetCString(&config, [key UTF8String]);
+    if (c) {
+      value = [NSString stringWithUTF8String:c];
+    }
+    RimeConfigClose(&config);
+  }
+  return value;
+}
 
 @end
