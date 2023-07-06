@@ -2,8 +2,12 @@
 
 [中州韻輸入法引擎／Rime Input Method Engine](https://github.com/rime/librime) to iOS Platform
 
-使用 SwiftPackageManger 对 librime 封装. 方便 iOS 应用集成.
+将 librime 编译为 iOS 项目使用的二进制包，供 iOS 平台代码调用。
 
+> 注意：
+> 这个项目开始是包含在 Swift package manager 中的，里面包含了 OC 和 Swift 对 librime api的封装。
+> 从 hamster 的2.0开始，重构了项目代码，移除了这个项目的代码，相关代码移动到 Hamster 的 RimeKit 中。
+> 目前这个项目只用来编译二进制的 framework 包。
 
 ## 依赖项目
 
