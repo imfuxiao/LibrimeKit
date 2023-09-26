@@ -1,15 +1,16 @@
 diff --git a/.gitignore b/.gitignore
-index 651cad7..a613c96 100644
+index 6ec9dae..dc2266c 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -12,3 +12,6 @@ env.bat
+@@ -12,5 +12,6 @@ env.bat
  node_modules/
  *~
  .*.swp
+-.cache/
+-*.7z
 +.DS_Store
 +ios
 +*.tar.bz2
-\ No newline at end of file
 diff --git a/README-iOS.md b/README-iOS.md
 new file mode 100644
 index 0000000..81d429e
@@ -1303,10 +1304,10 @@ index 80fb5dd..0cc6907 100644
    ${rime_library}
    ${rime_dict_library}
 diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
-index 18e3407..6f8b0dc 100644
+index ab64c52..4f65c36 100644
 --- a/tools/CMakeLists.txt
 +++ b/tools/CMakeLists.txt
-@@ -7,16 +7,49 @@ set(rime_console_deps
+@@ -7,21 +7,73 @@ set(rime_console_deps
    ${rime_levers_library}
    ${rime_plugins_library})
  
@@ -1353,11 +1354,12 @@ index 18e3407..6f8b0dc 100644
 +  endif()
 +endif()
 +
- # msvc doesn't export all symbols
- if(NOT (WIN32 AND BUILD_SHARED_LIBS))
- 
-@@ -24,6 +57,22 @@ set(rime_console_src "rime_console.cc")
++# msvc doesn't export all symbols
++if(NOT (WIN32 AND BUILD_SHARED_LIBS))
++
+ set(rime_console_src "rime_console.cc")
  add_executable(rime_console ${rime_console_src})
+ target_compile_definitions(rime_console PRIVATE RIME_IMPORTS)
  target_link_libraries(rime_console ${rime_console_deps})
  
 +if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
@@ -1379,7 +1381,7 @@ index 18e3407..6f8b0dc 100644
  set(rime_dict_manager_src "rime_dict_manager.cc")
  add_executable(rime_dict_manager ${rime_dict_manager_src})
  target_link_libraries(rime_dict_manager
-@@ -31,6 +80,22 @@ target_link_libraries(rime_dict_manager
+@@ -29,6 +81,22 @@ target_link_libraries(rime_dict_manager
    ${rime_dict_library}
    ${rime_levers_library})
  
@@ -1401,11 +1403,11 @@ index 18e3407..6f8b0dc 100644
 +
  set(rime_deployer_src "rime_deployer.cc")
  add_executable(rime_deployer ${rime_deployer_src})
- target_link_libraries(rime_deployer
-@@ -38,6 +103,22 @@ target_link_libraries(rime_deployer
-   ${rime_dict_library}
-   ${rime_levers_library})
- 
+ target_compile_definitions(rime_deployer PRIVATE RIME_IMPORTS)
+@@ -48,6 +116,21 @@ add_executable(rime_table_decompiler ${rime_table_decompiler_src})
+ target_link_libraries(rime_table_decompiler
+   ${rime_library}
+   ${rime_dict_library})
 +if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
 +  set(RIME_DEPLOYER_BUNDLE_IDENTIFIER "")
 +  set(RIME_DEPLOYER_BUNDLE_IDENTIFIER ${RIME_DEPLOYER_BUNDLE_IDENTIFIER})
@@ -1421,15 +1423,14 @@ index 18e3407..6f8b0dc 100644
 +    set_xcode_property (rime_deployer DEVELOPMENT_TEAM ${DEVELOPMENT_TEAM} All)
 +  endif()
 +endif()
-+
+ 
  install(TARGETS rime_deployer DESTINATION ${BIN_INSTALL_DIR})
  install(TARGETS rime_dict_manager DESTINATION ${BIN_INSTALL_DIR})
- 
 diff --git a/xcode.mk b/xcode.mk
-index f80d9b6..5474685 100644
+index cf07f0c..e74fe08 100644
 --- a/xcode.mk
 +++ b/xcode.mk
-@@ -10,6 +10,69 @@ endif
+@@ -10,6 +10,68 @@ endif
  # https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html
  export SDKROOT ?= $(shell xcrun --sdk macosx --show-sdk-path)
  
@@ -1442,7 +1443,6 @@ index f80d9b6..5474685 100644
 +export DEVELOPMENT_TEAM ?= M4N6995A28
 +# target min version
 +export MINVERSION ?= 14
-+# dev.fuxiao.apps.iFlypy
 +export RIME_BUNDLE_IDENTIFIER ?= dev.fuxiao.apps.rime.librime.rime
 +export RIME_API_CCONSOLE_BUNDLE_IDENTIFIER ?= dev.fuxiao.apps.rime.librime.rimeApiConsole
 +export RIME_PATCH_BUNDLE_IDENTIFIER ?= dev.fuxiao.apps.rime.librime.rimePatch
@@ -1497,9 +1497,9 @@ index f80d9b6..5474685 100644
 +
 +
  # https://cmake.org/cmake/help/latest/envvar/MACOSX_DEPLOYMENT_TARGET.html
- export MACOSX_DEPLOYMENT_TARGET ?= 10.9
+ export MACOSX_DEPLOYMENT_TARGET ?= 10.13
  
-@@ -18,23 +81,31 @@ ifdef BUILD_UNIVERSAL
+@@ -18,23 +80,32 @@ ifdef BUILD_UNIVERSAL
  export CMAKE_OSX_ARCHITECTURES = arm64;x86_64
  endif
  
@@ -1520,6 +1520,7 @@ index f80d9b6..5474685 100644
  release:
  	cmake . -B$(build) -GXcode \
 +	-DBUILD_SHARED_LIBS=OFF \
++	-DBUILD_SEPARATE_LIBS=OFF \
  	-DBUILD_STATIC=ON \
 +	-DENABLE_LOGGING=ON \
 +	-DBUILD_TEST=OFF \
@@ -1527,7 +1528,7 @@ index f80d9b6..5474685 100644
  	-DCMAKE_INSTALL_PREFIX="$(dist_dir)" \
 -	$(CMAKE_BOOST_OPTIONS)
 +	-DBUILD_MERGED_PLUGINS=ON \
-+	-DENABLE_EXTERNAL_PLUGINS=OFF \
++	-DENABLE_EXTERNAL_PLUGINS=ON \
 +	$(CMAKE_BOOST_OPTIONS) \
 +	$(RIME_CMAKE_XCODE_FLAGS)
  	cmake --build $(build) --config Release
