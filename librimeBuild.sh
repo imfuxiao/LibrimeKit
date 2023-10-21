@@ -19,10 +19,8 @@ rm -rf ${RIME_ROOT}/librime/plugins/lua
 ${RIME_ROOT}/librime/install-plugins.sh imfuxiao/librime-lua@main
 
 # install charcode
-# TODO: 需要依赖 boost_locale.xcframework 而 boost_locale 依赖 icu, 在 xcode下编译失败
-# rm -rf ${RIME_ROOT}/librime/plugins/librime-charcode
-# ${RIME_ROOT}/librime/install-plugins.sh rime/librime-charcode
-# 下面记得添加 rime_require_module_charcode()
+rm -rf ${RIME_ROOT}/librime/plugins/librime-charcode
+${RIME_ROOT}/librime/install-plugins.sh rime/librime-charcode
 
 # 添加lua模块依赖
 sed -i "" '/#if RIME_BUILD_SHARED_LIBS/,/#endif/c\
@@ -34,6 +32,7 @@ extern void rime_require_module_dict();\
 extern void rime_require_module_gears();\
 extern void rime_require_module_levers();\
 extern void rime_require_module_lua();\
+extern void rime_require_module_charcode();\
 // link to default modules explicitly when building static library.\
 static void rime_declare_module_dependencies() {\
   rime_require_module_core();\
@@ -41,6 +40,7 @@ static void rime_declare_module_dependencies() {\
   rime_require_module_gears();\
   rime_require_module_levers();\
   rime_require_module_lua();\
+  rime_require_module_charcode();\
 }\
 #endif\
 ' ${RIME_ROOT}/librime/src/rime_api.cc

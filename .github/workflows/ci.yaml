@@ -23,6 +23,7 @@ jobs:
           path: |
             /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/frameworks
             /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/dest
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/scripts
           key: ${{ runner.os }}-boost
 
       - name: Build Boost
@@ -37,6 +38,7 @@ jobs:
           path: |
             /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/frameworks
             /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/dest
+            /Users/runner/work/LibrimeKit/LibrimeKit/boost-iosx/scripts
           key: ${{ runner.os }}-boost
 
       - name: Build Librime

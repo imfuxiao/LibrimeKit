@@ -4,6 +4,7 @@ mkfile_dir := $(dir $(mkfile_path))
 COCOAPODS_EXISTS:=$(shell gem list -i cocoapods)
 
 BOOST_FRAMEWORK_PATH=boost-iosx/frameworks
+ICU_FRAMEWORK_PATH=boost-iosx/scripts/Pods/icu4c-iosx/product/frameworks
 
 .PHONY: cocoapads boost-build boost-clean librime-check librime-build librime-clean
 
@@ -23,7 +24,13 @@ boost-build: cocoapods
 		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_atomic.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_filesystem.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_regex.xcframework Frameworks && \
-		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_system.xcframework Frameworks
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_locale.xcframework Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_system.xcframework Frameworks && \
+		cp -rf ${ICU_FRAMEWORK_PATH}/icudata.xcframework Frameworks && \
+		cp -rf ${ICU_FRAMEWORK_PATH}/icui18n.xcframework Frameworks && \
+		cp -rf ${ICU_FRAMEWORK_PATH}/icuio.xcframework Frameworks && \
+		cp -rf ${ICU_FRAMEWORK_PATH}/icuuc.xcframework Frameworks
+		
 
 boost-clean:
 	${MAKE} -C boost-iosx clean
