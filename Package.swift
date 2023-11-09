@@ -51,9 +51,11 @@ let package = Package(
     .binaryTarget(
       name: "libyaml-cpp",
       path: "Frameworks/libyaml-cpp.xcframework"),
+    .target(name: "C"),
     .target(
       name: "LibrimeKit",
       dependencies: [
+        "C",
         "librime",
         "boost_atomic",
         "boost_filesystem",
