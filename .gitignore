@@ -10,6 +10,7 @@ DerivedData/
 /Frameworks
 *.bz2
 /lib
+/include
 *.a
 *.apply
 .librime
