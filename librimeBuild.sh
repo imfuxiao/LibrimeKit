@@ -91,9 +91,13 @@ function prepare_library() {
 
   # transform *.a to xcframework
   rm -rf ${RIME_ROOT}/Frameworks/${LIBRIME_VARIANT}.xcframework
+
+  # 屏蔽 headers ，双键盘引用不同的 librime frameworke, 在 XCoode 编译期间报错：重复的文件 
+  # -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a -headers ${LIBRIME_INCLUDE} \
+  # -library ${RIME_LIB}/${LIBRIME_VARIANT}_arm64.a -headers ${LIBRIME_INCLUDE} \
   xcodebuild -create-xcframework \
-  -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a -headers ${LIBRIME_INCLUDE} \
-  -library ${RIME_LIB}/${LIBRIME_VARIANT}_arm64.a -headers ${LIBRIME_INCLUDE} \
+  -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a \
+  -library ${RIME_LIB}/${LIBRIME_VARIANT}_arm64.a \
   -output ${RIME_ROOT}/Frameworks/${LIBRIME_VARIANT}.xcframework
 
   # clean
