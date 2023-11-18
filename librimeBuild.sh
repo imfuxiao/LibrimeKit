@@ -19,6 +19,8 @@ RIME_INCLUDE=${RIME_ROOT}/include
 
 rm -rf ${RIME_LIB} ${RIME_INCLUDE} && mkdir -p ${RIME_LIB} ${RIME_INCLUDE}
 
+deps=("libglog" "libleveldb" "libmarisa" "libopencc" "libyaml-cpp")
+
 function prepare_library() {
   LIBRIME_VARIANT=$1
   LIBRIME_ROOT=${RIME_ROOT}/${LIBRIME_VARIANT}
@@ -63,7 +65,22 @@ function prepare_library() {
   #endif\
   ' ${LIBRIME_ROOT}/src/rime_api.cc
 
+  # build deps
+  # first time: for ios
+  rm -rf ${LIBRIME_ROOT}/lib/*.a
   make xcode/ios/deps
+  for file in ${deps[@]}
+  do
+    cp -f ${LIBRIME_ROOT}/lib/${file}.a ${RIME_LIB}/${file}.a
+  done
+
+  # second time: for simulator
+  rm -rf ${LIBRIME_ROOT}/lib/*.a
+  make xcode/simulator/deps
+  for file in ${deps[@]}
+  do
+    cp -f ${LIBRIME_ROOT}/lib/${file}.a ${RIME_LIB}/${file}_simulator.a
+  done
 
   mkdir -p ${LIBRIME_INCLUDE}
   cp ${LIBRIME_ROOT}/src/*.h ${LIBRIME_INCLUDE}
@@ -107,28 +124,11 @@ function prepare_library() {
 prepare_library "librime"
 prepare_library "librime-sbxlm"
 
-# copy librime dependence lib
-cp -f ${RIME_ROOT}/librime/lib/*.a ${RIME_ROOT}/lib
-
-files=("libglog" "libleveldb" "libmarisa" "libopencc" "libyaml-cpp")
-for file in ${files[@]}
+for file in ${deps[@]}
 do
-    echo "file = ${file}"
-
-    # 拆分模拟器编译文件
-    rm -rf $RIME_ROOT/lib/${file}_x86.a
-    lipo $RIME_ROOT/lib/${file}.a \
-         -thin x86_64 \
-         -output $RIME_ROOT/lib/${file}_x86.a
-
-    rm -rf $RIME_ROOT/lib/${file}_arm64.a
-    lipo $RIME_ROOT/lib/${file}.a \
-         -thin arm64 \
-         -output $RIME_ROOT/lib/${file}_arm64.a
-
     rm -rf ${RIME_ROOT}/Frameworks/${file}.xcframework
     xcodebuild -create-xcframework \
-    -library ${RIME_ROOT}/lib/${file}_x86.a \
-    -library ${RIME_ROOT}/lib/${file}_arm64.a \
+    -library ${RIME_ROOT}/lib/${file}.a \
+    -library ${RIME_ROOT}/lib/${file}_simulator.a \
     -output ${RIME_ROOT}/Frameworks/${file}.xcframework
 done
