@@ -1427,10 +1427,10 @@ index ab64c52..4f65c36 100644
  install(TARGETS rime_deployer DESTINATION ${BIN_INSTALL_DIR})
  install(TARGETS rime_dict_manager DESTINATION ${BIN_INSTALL_DIR})
 diff --git a/xcode.mk b/xcode.mk
-index cf07f0c..e74fe08 100644
+index cf07f0c..2118b35 100644
 --- a/xcode.mk
 +++ b/xcode.mk
-@@ -10,6 +10,68 @@ endif
+@@ -10,6 +10,74 @@ endif
  # https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html
  export SDKROOT ?= $(shell xcrun --sdk macosx --show-sdk-path)
  
@@ -1472,9 +1472,15 @@ index cf07f0c..e74fe08 100644
 +	-DRIME_TEST_BUNDLE_IDENTIFIER=$(RIME_TEST_BUNDLE_IDENTIFIER)
 +
 +IOS_CROSS_COMPILE_CMAKE_FLAGS = -DCMAKE_SYSTEM_NAME=iOS \
-+	-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
++	-DCMAKE_OSX_ARCHITECTURES="arm64" \
++	-DCMAKE_OSX_SYSROOT=iphoneos \
 +	-DCMAKE_OSX_DEPLOYMENT_TARGET=$(MINVERSION) \
-+	-DCMAKE_IOS_INSTALL_COMBINED=YES \
++	-DCMAKE_MACOSX_BUNDLE=NO
++
++SIMULATOR_CROSS_COMPILE_CMAKE_FLAGS = -DCMAKE_SYSTEM_NAME=iOS \
++	-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
++	-DCMAKE_OSX_SYSROOT=iphonesimulator \
++	-DCMAKE_OSX_DEPLOYMENT_TARGET=$(MINVERSION) \
 +	-DCMAKE_MACOSX_BUNDLE=NO
 +
 +# 	-DCMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH=NO \
@@ -1499,7 +1505,7 @@ index cf07f0c..e74fe08 100644
  # https://cmake.org/cmake/help/latest/envvar/MACOSX_DEPLOYMENT_TARGET.html
  export MACOSX_DEPLOYMENT_TARGET ?= 10.13
  
-@@ -18,23 +80,32 @@ ifdef BUILD_UNIVERSAL
+@@ -18,23 +86,32 @@ ifdef BUILD_UNIVERSAL
  export CMAKE_OSX_ARCHITECTURES = arm64;x86_64
  endif
  
@@ -1534,7 +1540,7 @@ index cf07f0c..e74fe08 100644
  	cmake --build $(build) --config Release
  
  release-with-icu:
-@@ -44,14 +115,16 @@ release-with-icu:
+@@ -44,14 +121,16 @@ release-with-icu:
  	-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
  	-DCMAKE_INSTALL_PREFIX="$(dist_dir)" \
  	-DCMAKE_PREFIX_PATH="$(icu_prefix)" \
@@ -1553,7 +1559,7 @@ index cf07f0c..e74fe08 100644
  	cmake --build $(build) --config Debug
  
  debug-with-icu:
-@@ -60,16 +133,28 @@ debug-with-icu:
+@@ -60,16 +139,28 @@ debug-with-icu:
  	-DBUILD_SEPARATE_LIBS=ON \
  	-DBUILD_WITH_ICU=ON \
  	-DCMAKE_PREFIX_PATH="$(icu_prefix)" \
@@ -1584,7 +1590,7 @@ index cf07f0c..e74fe08 100644
  dist: release
  	cmake --build $(build) --config Release --target install
  
-@@ -87,13 +172,19 @@ test-debug: debug
+@@ -87,13 +178,25 @@ test-debug: debug
  
  # `thirdparty` is deprecated in favor of `deps`
  deps thirdparty:
@@ -1607,3 +1613,9 @@ index cf07f0c..e74fe08 100644
 +
 +ios/%:
 +	RIME_IOS_CROSS_COMPILING=true RIME_CMAKE_FLAGS='$(IOS_CROSS_COMPILE_CMAKE_FLAGS)' make -f xcode.mk $(@:ios/%=%)
++
++simulator:
++	RIME_IOS_CROSS_COMPILING=true RIME_CMAKE_FLAGS='$(SIMULATOR_CROSS_COMPILE_CMAKE_FLAGS)' make -f xcode.mk
++
++simulator/%:
++	RIME_IOS_CROSS_COMPILING=true RIME_CMAKE_FLAGS='$(SIMULATOR_CROSS_COMPILE_CMAKE_FLAGS)' make -f xcode.mk $(@:simulator/%=%)
