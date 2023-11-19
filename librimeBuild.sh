@@ -100,11 +100,17 @@ function prepare_library() {
   make xcode/ios/dist
   cp -f ${LIBRIME_ROOT}/dist/lib/librime.a ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a
 
+  # librime build: iOS simulator 64 bit (arm64)
+  export PLATFORM=SIMULATORARM64
+  rm -rf ${LIBRIME_ROOT}/build ${LIBRIME_ROOT}/dist
+  make xcode/ios/dist
+  cp -f ${LIBRIME_ROOT}/dist/lib/librime.a ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_arm64.a
+
   # librime build: arm64
   export PLATFORM=OS64
   rm -rf ${LIBRIME_ROOT}/build ${LIBRIME_ROOT}/dist
   make xcode/ios/dist
-  cp -f ${LIBRIME_ROOT}/dist/lib/librime.a ${RIME_LIB}/${LIBRIME_VARIANT}_arm64.a
+  cp -f ${LIBRIME_ROOT}/dist/lib/librime.a ${RIME_LIB}/${LIBRIME_VARIANT}.a
 
   # transform *.a to xcframework
   rm -rf ${RIME_ROOT}/Frameworks/${LIBRIME_VARIANT}.xcframework
@@ -112,9 +118,11 @@ function prepare_library() {
   # 屏蔽 headers ，双键盘引用不同的 librime frameworke, 在 XCoode 编译期间报错：重复的文件 
   # -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a -headers ${LIBRIME_INCLUDE} \
   # -library ${RIME_LIB}/${LIBRIME_VARIANT}_arm64.a -headers ${LIBRIME_INCLUDE} \
+  lipo ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_arm64.a -create -output ${RIME_LIB}/${LIBRIME_VARIANT}_simulator.a
+
   xcodebuild -create-xcframework \
-  -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a \
-  -library ${RIME_LIB}/${LIBRIME_VARIANT}_arm64.a \
+  -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator.a \
+  -library ${RIME_LIB}/${LIBRIME_VARIANT}.a \
   -output ${RIME_ROOT}/Frameworks/${LIBRIME_VARIANT}.xcframework
 
   # clean
