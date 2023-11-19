@@ -44,5 +44,5 @@ librime-build: librime-check
 	${mkfile_dir}/librimeBuild.sh
 
 librime-clean:
-	rm -rf ${mkfile_dir}/librime.patch.apply
+	rm -rf ${mkfile_dir}/librime*.patch.apply
 	rm -rf librime librime-sbxlm Frameworks/lib*.xcframework lib/*

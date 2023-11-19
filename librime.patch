@@ -1427,7 +1427,7 @@ index ab64c52..4f65c36 100644
  install(TARGETS rime_deployer DESTINATION ${BIN_INSTALL_DIR})
  install(TARGETS rime_dict_manager DESTINATION ${BIN_INSTALL_DIR})
 diff --git a/xcode.mk b/xcode.mk
-index cf07f0c..2118b35 100644
+index cf07f0c..941d489 100644
 --- a/xcode.mk
 +++ b/xcode.mk
 @@ -10,6 +10,74 @@ endif
@@ -1460,7 +1460,7 @@ index cf07f0c..2118b35 100644
 +# RIME_TEST_BUNDLE_IDENTIFIER: 环境变量, 设置 rime_test.xcodeproj 的 bundle identifier 值
 +XCODE_IOS_CROSS_COMPILE_CMAKE_FLAGS = -DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/cmake/toolchain/ios.cmake \
 +	-DPLATFORM=$(PLATFORM) \
-+	-DCMAKE_OSX_DEPLOYMENT_TARGET=$(MINVERSION) \
++	-DDEPLOYMENT_TARGET=$(MINVERSION) \
 +	-DENABLE_BITCODE=NO \
 +	-DDEVELOPMENT_TEAM=$(DEVELOPMENT_TEAM) \
 +	-DRIME_BUNDLE_IDENTIFIER=$(RIME_BUNDLE_IDENTIFIER) \
