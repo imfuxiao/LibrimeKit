@@ -1,5 +1,5 @@
 diff --git a/.gitignore b/.gitignore
-index 6ec9dae..dc2266c 100644
+index 6ec9dae1..dc2266c1 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -12,5 +12,6 @@ env.bat
@@ -13,7 +13,7 @@ index 6ec9dae..dc2266c 100644
 +*.tar.bz2
 diff --git a/README-iOS.md b/README-iOS.md
 new file mode 100644
-index 0000000..81d429e
+index 00000000..81d429e6
 --- /dev/null
 +++ b/README-iOS.md
 @@ -0,0 +1,91 @@
@@ -110,7 +110,7 @@ index 0000000..81d429e
 +`build/bin/Release/rime_*`.
 \ No newline at end of file
 diff --git a/cmake/FindMarisa.cmake b/cmake/FindMarisa.cmake
-index 9a9851b..71934ee 100644
+index 9a9851b4..71934eed 100644
 --- a/cmake/FindMarisa.cmake
 +++ b/cmake/FindMarisa.cmake
 @@ -9,7 +9,13 @@ if (Marisa_STATIC)
@@ -130,7 +130,7 @@ index 9a9851b..71934ee 100644
  endif(Marisa_INCLUDE_PATH AND Marisa_LIBRARY)
 diff --git a/cmake/toolchain/ios.cmake b/cmake/toolchain/ios.cmake
 new file mode 100644
-index 0000000..f88956b
+index 00000000..f88956b7
 --- /dev/null
 +++ b/cmake/toolchain/ios.cmake
 @@ -0,0 +1,1014 @@
@@ -1150,7 +1150,7 @@ index 0000000..f88956b
 +endmacro(find_host_package)
 \ No newline at end of file
 diff --git a/deps.mk b/deps.mk
-index ac8f6e1..2bca064 100644
+index ac8f6e1b..2bca0643 100644
 --- a/deps.mk
 +++ b/deps.mk
 @@ -29,6 +29,7 @@ glog:
@@ -1225,7 +1225,7 @@ index ac8f6e1..2bca064 100644
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index ac44365..9ff9d24 100644
+index ac44365f..9ff9d249 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -69,6 +69,7 @@ else()
@@ -1275,8 +1275,97 @@ index ac44365..9ff9d24 100644
    install(TARGETS rime-static DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
  endif()
 +
+diff --git a/src/rime/context.cc b/src/rime/context.cc
+index 905ced34..66324bc0 100644
+--- a/src/rime/context.cc
++++ b/src/rime/context.cc
+@@ -254,6 +254,12 @@ void Context::set_input(const string& value) {
+   update_notifier_(this);
+ }
+ 
++void Context::replace_input(size_t pos, size_t count, const string& value) {
++  input_.replace(pos, count, value);
++  caret_pos_ = input_.length();
++  update_notifier_(this);
++}
++
+ void Context::set_option(const string& name, bool value) {
+   options_[name] = value;
+   option_update_notifier_(this, name);
+diff --git a/src/rime/context.h b/src/rime/context.h
+index 988a5817..4973abb1 100644
+--- a/src/rime/context.h
++++ b/src/rime/context.h
+@@ -58,6 +58,7 @@ class Context {
+ 
+   void set_input(const string& value);
+   const string& input() const { return input_; }
++  void replace_input(size_t pos, size_t count, const string& value);
+ 
+   void set_caret_pos(size_t caret_pos);
+   size_t caret_pos() const { return caret_pos_; }
+diff --git a/src/rime_api.cc b/src/rime_api.cc
+index 270ab923..4486be03 100644
+--- a/src/rime_api.cc
++++ b/src/rime_api.cc
+@@ -1083,6 +1083,18 @@ const char* RimeGetStateLabel(RimeSessionId session_id,
+       .str;
+ }
+ 
++RIME_API Bool RimeReplaceInput(RimeSessionId session_id, size_t pos, size_t count, const char *replace_char) {
++  an<Session> session(Service::instance().GetSession(session_id));
++  if (!session)
++    return False;
++  Context *ctx = session->context();
++  if (!ctx)
++    return False;
++  ctx->replace_input(pos, count, replace_char);
++  return True;
++}
++
++
+ RIME_API RimeApi* rime_get_api() {
+   static RimeApi s_api = {0};
+   if (!s_api.data_size) {
+@@ -1176,6 +1188,7 @@ RIME_API RimeApi* rime_get_api() {
+     s_api.delete_candidate = &RimeDeleteCandidate;
+     s_api.delete_candidate_on_current_page = &RimeDeleteCandidateOnCurrentPage;
+     s_api.get_state_label_abbreviated = &RimeGetStateLabelAbbreviated;
++    s_api.replace_input = &RimeReplaceInput;
+   }
+   return &s_api;
+ }
+diff --git a/src/rime_api.h b/src/rime_api.h
+index f36c3a74..c1c152dd 100644
+--- a/src/rime_api.h
++++ b/src/rime_api.h
+@@ -272,6 +272,7 @@ RIME_API void RimeCleanupAllSessions(void);
+ // Input
+ 
+ RIME_API Bool RimeProcessKey(RimeSessionId session_id, int keycode, int mask);
++
+ /*!
+  * return True if there is unread commit text
+  */
+@@ -386,6 +387,7 @@ RIME_API Bool RimeConfigUpdateSignature(RimeConfig* config, const char* signer);
+ RIME_API Bool RimeSimulateKeySequence(RimeSessionId session_id,
+                                       const char* key_sequence);
+ 
++RIME_API Bool RimeReplaceInput(RimeSessionId session_id, size_t pos, size_t count, const char* replace_char);
+ // Module
+ 
+ /*!
+@@ -643,6 +645,8 @@ typedef struct rime_api_t {
+                                                  const char* option_name,
+                                                  Bool state,
+                                                  Bool abbreviated);
++  //! modify the current input
++  Bool (*replace_input)(RimeSessionId session_id, size_t pos, size_t count, const char* replace_char);
+ } RimeApi;
+ 
+ //! API entry
 diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
-index 80fb5dd..0cc6907 100644
+index 80fb5ddd..0cc6907a 100644
 --- a/test/CMakeLists.txt
 +++ b/test/CMakeLists.txt
 @@ -1,6 +1,23 @@
@@ -1304,7 +1393,7 @@ index 80fb5dd..0cc6907 100644
    ${rime_library}
    ${rime_dict_library}
 diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
-index ab64c52..4f65c36 100644
+index ab64c52a..4f65c36d 100644
 --- a/tools/CMakeLists.txt
 +++ b/tools/CMakeLists.txt
 @@ -7,21 +7,73 @@ set(rime_console_deps
@@ -1427,7 +1516,7 @@ index ab64c52..4f65c36 100644
  install(TARGETS rime_deployer DESTINATION ${BIN_INSTALL_DIR})
  install(TARGETS rime_dict_manager DESTINATION ${BIN_INSTALL_DIR})
 diff --git a/xcode.mk b/xcode.mk
-index cf07f0c..941d489 100644
+index cf07f0c4..941d489c 100644
 --- a/xcode.mk
 +++ b/xcode.mk
 @@ -10,6 +10,74 @@ endif
