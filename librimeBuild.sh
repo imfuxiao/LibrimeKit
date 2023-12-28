@@ -34,6 +34,11 @@ function prepare_library() {
       git apply ${RIME_ROOT}/librime.patch >/dev/null 2>&1
   fi
 
+  # install octagram plugin
+  rm -rf ${LIBRIME_ROOT}/plugins/octagram
+  ${LIBRIME_ROOT}/install-plugins.sh lotem/librime-octagram
+  (cd ${LIBRIME_ROOT}/plugins/octagram && sed -i "" 's/add_subdirectory(tools)//' CMakeLists.txt)
+
   # install lua plugin
   rm -rf ${LIBRIME_ROOT}/plugins/lua
   ${LIBRIME_ROOT}/install-plugins.sh imfuxiao/librime-lua@main
@@ -44,7 +49,7 @@ function prepare_library() {
   #extern void rime_require_module_charcode();\
   #  rime_require_module_charcode();\
 
-  # 添加lua模块依赖
+  # 添加插件模块依赖
   sed -i "" '/#if RIME_BUILD_SHARED_LIBS/,/#endif/c\
   #if RIME_BUILD_SHARED_LIBS\
   #define rime_declare_module_dependencies()\
@@ -54,6 +59,7 @@ function prepare_library() {
   extern void rime_require_module_gears();\
   extern void rime_require_module_levers();\
   extern void rime_require_module_lua();\
+  extern void rime_require_module_octagram();\
   // link to default modules explicitly when building static library.\
   static void rime_declare_module_dependencies() {\
     rime_require_module_core();\
@@ -61,6 +67,7 @@ function prepare_library() {
     rime_require_module_gears();\
     rime_require_module_levers();\
     rime_require_module_lua();\
+    rime_require_module_octagram();\
   }\
   #endif\
   ' ${LIBRIME_ROOT}/src/rime_api.cc
