@@ -30,6 +30,19 @@ boost-build: cocoapods
 		cp -rf ${ICU_FRAMEWORK_PATH}/icui18n.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icuio.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icuuc.xcframework Frameworks
+
+boost-copy:
+	mkdir -p Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_atomic.xcframework Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_filesystem.xcframework Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_regex.xcframework Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_locale.xcframework Frameworks && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/boost_system.xcframework Frameworks && \
+		cp -rf ${ICU_FRAMEWORK_PATH}/icudata.xcframework Frameworks && \
+		cp -rf ${ICU_FRAMEWORK_PATH}/icui18n.xcframework Frameworks && \
+		cp -rf ${ICU_FRAMEWORK_PATH}/icuio.xcframework Frameworks && \
+		cp -rf ${ICU_FRAMEWORK_PATH}/icuuc.xcframework Frameworks
+
 		
 
 boost-clean:
