@@ -137,7 +137,6 @@ function prepare_library() {
 }
 
 prepare_library "librime"
-prepare_library "librime-sbxlm"
 
 for file in ${deps[@]}
 do

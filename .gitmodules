@@ -4,6 +4,3 @@
 [submodule "boost-iosx"]
 	path = boost-iosx
 	url = https://github.com/imfuxiao/boost-iosx.git
-[submodule "librime-sbxlm"]
-	path = librime-sbxlm
-	url = https://github.com/sbxlmdsl/librime
