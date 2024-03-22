@@ -11,6 +11,23 @@ index 6ec9dae1..dc2266c1 100644
 +.DS_Store
 +ios
 +*.tar.bz2
+diff --git a/Makefile b/Makefile
+index e4f56fe6..d0ad1c3e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -43,6 +43,12 @@ deps:
+ deps/%:
+ 	$(MAKE) -f deps.mk $(@:deps/%=%)
+ 
++xcode:
++	$(MAKE) -f xcode.mk
++
++xcode/%:
++	$(MAKE) -f xcode.mk $(@:xcode/%=%)
++
+ clean:
+ 	rm -Rf build debug
+ 
 diff --git a/README-iOS.md b/README-iOS.md
 new file mode 100644
 index 00000000..81d429e6
@@ -1150,10 +1167,10 @@ index 00000000..f88956b7
 +endmacro(find_host_package)
 \ No newline at end of file
 diff --git a/deps.mk b/deps.mk
-index ac8f6e1b..2bca0643 100644
+index ede5330f..5599e688 100644
 --- a/deps.mk
 +++ b/deps.mk
-@@ -29,6 +29,7 @@ glog:
+@@ -32,6 +32,7 @@ glog:
  	-DWITH_GFLAGS:BOOL=OFF \
  	-DCMAKE_BUILD_TYPE:STRING="Release" \
  	-DCMAKE_INSTALL_PREFIX:PATH="$(rime_root)" \
@@ -1161,7 +1178,7 @@ index ac8f6e1b..2bca0643 100644
  	&& cmake --build $(build) --target install
  
  gtest:
-@@ -37,6 +38,7 @@ gtest:
+@@ -40,6 +41,7 @@ gtest:
  	-DBUILD_GMOCK:BOOL=OFF \
  	-DCMAKE_BUILD_TYPE:STRING="Release" \
  	-DCMAKE_INSTALL_PREFIX:PATH="$(rime_root)" \
@@ -1169,7 +1186,7 @@ index ac8f6e1b..2bca0643 100644
  	&& cmake --build $(build) --target install
  
  leveldb:
-@@ -46,6 +48,7 @@ leveldb:
+@@ -49,6 +51,7 @@ leveldb:
  	-DLEVELDB_BUILD_TESTS:BOOL=OFF \
  	-DCMAKE_BUILD_TYPE:STRING="Release" \
  	-DCMAKE_INSTALL_PREFIX:PATH="$(rime_root)" \
@@ -1177,8 +1194,8 @@ index ac8f6e1b..2bca0643 100644
  	&& cmake --build $(build) --target install
  
  marisa:
-@@ -53,15 +56,40 @@ marisa:
- 	cmake $(src_dir) -B$(build) \
+@@ -56,15 +59,40 @@ marisa:
+ 	cmake . -B$(build) \
  	-DCMAKE_BUILD_TYPE:STRING="Release" \
  	-DCMAKE_INSTALL_PREFIX:PATH="$(rime_root)" \
 +	$(RIME_CMAKE_FLAGS) \
@@ -1218,17 +1235,17 @@ index ac8f6e1b..2bca0643 100644
  
  yaml-cpp:
  	cd $(src_dir)/yaml-cpp; \
-@@ -71,4 +99,5 @@ yaml-cpp:
+@@ -74,4 +102,5 @@ yaml-cpp:
  	-DYAML_CPP_BUILD_TOOLS:BOOL=OFF \
  	-DCMAKE_BUILD_TYPE:STRING="Release" \
  	-DCMAKE_INSTALL_PREFIX:PATH="$(rime_root)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index ac44365f..9ff9d249 100644
+index 6364e1c8..42f0e692 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
-@@ -69,6 +69,7 @@ else()
+@@ -71,6 +71,7 @@ else()
      ${rime_plugins_deps})
  endif()
  
@@ -1236,7 +1253,7 @@ index ac44365f..9ff9d249 100644
  if(BUILD_SHARED_LIBS)
    add_library(rime ${rime_src})
    target_link_libraries(rime ${rime_deps})
-@@ -76,9 +77,33 @@ if(BUILD_SHARED_LIBS)
+@@ -78,9 +79,33 @@ if(BUILD_SHARED_LIBS)
      DEFINE_SYMBOL "RIME_EXPORTS"
      VERSION ${rime_version}
      SOVERSION ${rime_soversion})
@@ -1270,100 +1287,11 @@ index ac44365f..9ff9d249 100644
    install(TARGETS rime DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
  
    if(BUILD_SEPARATE_LIBS)
-@@ -144,3 +169,4 @@ else()
+@@ -146,3 +171,4 @@ else()
    set_target_properties(rime-static PROPERTIES OUTPUT_NAME "rime" PREFIX "lib")
    install(TARGETS rime-static DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
  endif()
 +
-diff --git a/src/rime/context.cc b/src/rime/context.cc
-index 905ced34..66324bc0 100644
---- a/src/rime/context.cc
-+++ b/src/rime/context.cc
-@@ -254,6 +254,12 @@ void Context::set_input(const string& value) {
-   update_notifier_(this);
- }
- 
-+void Context::replace_input(size_t pos, size_t count, const string& value) {
-+  input_.replace(pos, count, value);
-+  caret_pos_ = input_.length();
-+  update_notifier_(this);
-+}
-+
- void Context::set_option(const string& name, bool value) {
-   options_[name] = value;
-   option_update_notifier_(this, name);
-diff --git a/src/rime/context.h b/src/rime/context.h
-index 988a5817..4973abb1 100644
---- a/src/rime/context.h
-+++ b/src/rime/context.h
-@@ -58,6 +58,7 @@ class Context {
- 
-   void set_input(const string& value);
-   const string& input() const { return input_; }
-+  void replace_input(size_t pos, size_t count, const string& value);
- 
-   void set_caret_pos(size_t caret_pos);
-   size_t caret_pos() const { return caret_pos_; }
-diff --git a/src/rime_api.cc b/src/rime_api.cc
-index 270ab923..4486be03 100644
---- a/src/rime_api.cc
-+++ b/src/rime_api.cc
-@@ -1083,6 +1083,18 @@ const char* RimeGetStateLabel(RimeSessionId session_id,
-       .str;
- }
- 
-+RIME_API Bool RimeReplaceInput(RimeSessionId session_id, size_t pos, size_t count, const char *replace_char) {
-+  an<Session> session(Service::instance().GetSession(session_id));
-+  if (!session)
-+    return False;
-+  Context *ctx = session->context();
-+  if (!ctx)
-+    return False;
-+  ctx->replace_input(pos, count, replace_char);
-+  return True;
-+}
-+
-+
- RIME_API RimeApi* rime_get_api() {
-   static RimeApi s_api = {0};
-   if (!s_api.data_size) {
-@@ -1176,6 +1188,7 @@ RIME_API RimeApi* rime_get_api() {
-     s_api.delete_candidate = &RimeDeleteCandidate;
-     s_api.delete_candidate_on_current_page = &RimeDeleteCandidateOnCurrentPage;
-     s_api.get_state_label_abbreviated = &RimeGetStateLabelAbbreviated;
-+    s_api.replace_input = &RimeReplaceInput;
-   }
-   return &s_api;
- }
-diff --git a/src/rime_api.h b/src/rime_api.h
-index f36c3a74..c1c152dd 100644
---- a/src/rime_api.h
-+++ b/src/rime_api.h
-@@ -272,6 +272,7 @@ RIME_API void RimeCleanupAllSessions(void);
- // Input
- 
- RIME_API Bool RimeProcessKey(RimeSessionId session_id, int keycode, int mask);
-+
- /*!
-  * return True if there is unread commit text
-  */
-@@ -386,6 +387,7 @@ RIME_API Bool RimeConfigUpdateSignature(RimeConfig* config, const char* signer);
- RIME_API Bool RimeSimulateKeySequence(RimeSessionId session_id,
-                                       const char* key_sequence);
- 
-+RIME_API Bool RimeReplaceInput(RimeSessionId session_id, size_t pos, size_t count, const char* replace_char);
- // Module
- 
- /*!
-@@ -643,6 +645,8 @@ typedef struct rime_api_t {
-                                                  const char* option_name,
-                                                  Bool state,
-                                                  Bool abbreviated);
-+  //! modify the current input
-+  Bool (*replace_input)(RimeSessionId session_id, size_t pos, size_t count, const char* replace_char);
- } RimeApi;
- 
- //! API entry
 diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
 index 80fb5ddd..0cc6907a 100644
 --- a/test/CMakeLists.txt
@@ -1516,13 +1444,23 @@ index ab64c52a..4f65c36d 100644
  install(TARGETS rime_deployer DESTINATION ${BIN_INSTALL_DIR})
  install(TARGETS rime_dict_manager DESTINATION ${BIN_INSTALL_DIR})
 diff --git a/xcode.mk b/xcode.mk
-index cf07f0c4..941d489c 100644
---- a/xcode.mk
+new file mode 100644
+index 00000000..941d489c
+--- /dev/null
 +++ b/xcode.mk
-@@ -10,6 +10,74 @@ endif
- # https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html
- export SDKROOT ?= $(shell xcrun --sdk macosx --show-sdk-path)
- 
+@@ -0,0 +1,202 @@
++RIME_ROOT = $(CURDIR)
++
++dist_dir = $(RIME_ROOT)/dist
++
++ifdef BOOST_ROOT
++CMAKE_BOOST_OPTIONS = -DBoost_NO_BOOST_CMAKE=TRUE \
++	-DBOOST_ROOT="$(BOOST_ROOT)"
++endif
++
++# https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html
++export SDKROOT ?= $(shell xcrun --sdk macosx --show-sdk-path)
++
 +# OS64: to build for iOS (arm64 only)
 +# OS64COMBINED: to build for iOS & iOS Simulator (FAT lib) (arm64, x86_64)
 +# SIMULATOR64: to build for iOS simulator 64 bit (x86_64)
@@ -1591,81 +1529,79 @@ index cf07f0c4..941d489c 100644
 +else
 +
 +
- # https://cmake.org/cmake/help/latest/envvar/MACOSX_DEPLOYMENT_TARGET.html
- export MACOSX_DEPLOYMENT_TARGET ?= 10.13
- 
-@@ -18,23 +86,32 @@ ifdef BUILD_UNIVERSAL
- export CMAKE_OSX_ARCHITECTURES = arm64;x86_64
- endif
- 
++# https://cmake.org/cmake/help/latest/envvar/MACOSX_DEPLOYMENT_TARGET.html
++export MACOSX_DEPLOYMENT_TARGET ?= 10.13
++
++ifdef BUILD_UNIVERSAL
++# https://cmake.org/cmake/help/latest/envvar/CMAKE_OSX_ARCHITECTURES.html
++export CMAKE_OSX_ARCHITECTURES = arm64;x86_64
 +endif
 +
- # boost::locale library from homebrew links to homebrewed icu4c libraries
- icu_prefix = $(shell brew --prefix)/opt/icu4c
- 
- debug debug-with-icu test-debug: build ?= debug
- build ?= build
- 
--.PHONY: all release debug clean dist distclean test test-debug deps thirdparty \
++endif
++
++# boost::locale library from homebrew links to homebrewed icu4c libraries
++icu_prefix = $(shell brew --prefix)/opt/icu4c
++
++debug debug-with-icu test-debug: build ?= debug
++build ?= build
++
 +.PHONY: all release debug clean dist distclean test test-debug deps thirdparty ios\
- release-with-icu debug-with-icu dist-with-icu
- 
- all: release
- 
- release:
- 	cmake . -B$(build) -GXcode \
++release-with-icu debug-with-icu dist-with-icu
++
++all: release
++
++release:
++	cmake . -B$(build) -GXcode \
 +	-DBUILD_SHARED_LIBS=OFF \
 +	-DBUILD_SEPARATE_LIBS=OFF \
- 	-DBUILD_STATIC=ON \
++	-DBUILD_STATIC=ON \
 +	-DENABLE_LOGGING=ON \
 +	-DBUILD_TEST=OFF \
- 	-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
- 	-DCMAKE_INSTALL_PREFIX="$(dist_dir)" \
--	$(CMAKE_BOOST_OPTIONS)
++	-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
++	-DCMAKE_INSTALL_PREFIX="$(dist_dir)" \
 +	-DBUILD_MERGED_PLUGINS=ON \
 +	-DENABLE_EXTERNAL_PLUGINS=ON \
 +	$(CMAKE_BOOST_OPTIONS) \
 +	$(RIME_CMAKE_XCODE_FLAGS)
- 	cmake --build $(build) --config Release
- 
- release-with-icu:
-@@ -44,14 +121,16 @@ release-with-icu:
- 	-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
- 	-DCMAKE_INSTALL_PREFIX="$(dist_dir)" \
- 	-DCMAKE_PREFIX_PATH="$(icu_prefix)" \
--	$(CMAKE_BOOST_OPTIONS)
++	cmake --build $(build) --config Release
++
++release-with-icu:
++	cmake . -B$(build) -GXcode \
++	-DBUILD_STATIC=ON \
++	-DBUILD_WITH_ICU=ON \
++	-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
++	-DCMAKE_INSTALL_PREFIX="$(dist_dir)" \
++	-DCMAKE_PREFIX_PATH="$(icu_prefix)" \
 +	$(CMAKE_BOOST_OPTIONS) \
 +	$(RIME_CMAKE_XCODE_FLAGS)
- 	cmake --build $(build) --config Release
- 
- debug:
- 	cmake . -B$(build) -GXcode \
- 	-DBUILD_STATIC=ON \
- 	-DBUILD_SEPARATE_LIBS=ON \
--	$(CMAKE_BOOST_OPTIONS)
++	cmake --build $(build) --config Release
++
++debug:
++	cmake . -B$(build) -GXcode \
++	-DBUILD_STATIC=ON \
++	-DBUILD_SEPARATE_LIBS=ON \
 +	$(CMAKE_BOOST_OPTIONS) \
 +	$(RIME_CMAKE_XCODE_FLAGS)
- 	cmake --build $(build) --config Debug
- 
- debug-with-icu:
-@@ -60,16 +139,28 @@ debug-with-icu:
- 	-DBUILD_SEPARATE_LIBS=ON \
- 	-DBUILD_WITH_ICU=ON \
- 	-DCMAKE_PREFIX_PATH="$(icu_prefix)" \
--	$(CMAKE_BOOST_OPTIONS)
++	cmake --build $(build) --config Debug
++
++debug-with-icu:
++	cmake . -B$(build) -GXcode \
++	-DBUILD_STATIC=ON \
++	-DBUILD_SEPARATE_LIBS=ON \
++	-DBUILD_WITH_ICU=ON \
++	-DCMAKE_PREFIX_PATH="$(icu_prefix)" \
 +	$(CMAKE_BOOST_OPTIONS) \
 +	$(RIME_CMAKE_XCODE_FLAGS)
- 	cmake --build $(build) --config Debug
- 
- clean:
- 	rm -rf build > /dev/null 2>&1 || true
- 	rm -rf debug > /dev/null 2>&1 || true
- 	rm build.log > /dev/null 2>&1 || true
--	rm -f lib/* > /dev/null 2>&1 || true
++	cmake --build $(build) --config Debug
++
++clean:
++	rm -rf build > /dev/null 2>&1 || true
++	rm -rf debug > /dev/null 2>&1 || true
++	rm build.log > /dev/null 2>&1 || true
 +	rm -rf lib/* > /dev/null 2>&1 || true
 +	rm -rf bin/* > /dev/null 2>&1 || true
- 	$(MAKE) -f deps.mk clean-src
- 
++	$(MAKE) -f deps.mk clean-src
++
 +merged-plugins:
 +	cmake . -B$(build) \
 +	-DCMAKE_INSTALL_PREFIX=$(prefix) \
@@ -1676,25 +1612,32 @@ index cf07f0c4..941d489c 100644
 +	$(RIME_CMAKE_XCODE_FLAGS)
 +	cmake --build $(build)
 +
- dist: release
- 	cmake --build $(build) --config Release --target install
- 
-@@ -87,13 +178,25 @@ test-debug: debug
- 
- # `thirdparty` is deprecated in favor of `deps`
- deps thirdparty:
--	$(MAKE) -f deps.mk
++dist: release
++	cmake --build $(build) --config Release --target install
++
++dist-with-icu: release-with-icu
++	cmake --build $(build) --config Release --target install
++
++distclean: clean
++	rm -rf "$(dist_dir)" > /dev/null 2>&1 || true
++
++test: release
++	(cd $(build)/test; DYLD_LIBRARY_PATH=../lib/Release Release/rime_test)
++
++test-debug: debug
++	(cd $(build)/test; Debug/rime_test)
++
++# `thirdparty` is deprecated in favor of `deps`
++deps thirdparty:
 +	$(RIME_COMPILER_OPTIONS)  $(MAKE) -f deps.mk
- 
- deps/boost thirdparty/boost:
- 	./install-boost.sh
- 
- deps/%:
--	$(MAKE) -f deps.mk $(@:deps/%=%)
++
++deps/boost thirdparty/boost:
++	./install-boost.sh
++
++deps/%:
 +	$(RIME_COMPILER_OPTIONS)  $(MAKE) -f deps.mk $(@:deps/%=%)
- 
- thirdparty/%:
--	$(MAKE) -f deps.mk $(@:thirdparty/%=%)
++
++thirdparty/%:
 +	$(RIME_COMPILER_OPTIONS)  $(MAKE) -f deps.mk $(@:thirdparty/%=%)
 +
 +ios:
