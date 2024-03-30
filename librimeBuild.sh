@@ -74,7 +74,8 @@ function prepare_library() {
 
   # build deps
   # first time: for ios
-  rm -rf ${LIBRIME_ROOT}/lib/*.a
+  # rm -rf ${LIBRIME_ROOT}/lib/*.a
+  make xcode/ios/deps/clean
   make xcode/ios/deps
   for file in ${deps[@]}
   do
@@ -82,7 +83,8 @@ function prepare_library() {
   done
 
   # second time: for simulator
-  rm -rf ${LIBRIME_ROOT}/lib/*.a
+  # rm -rf ${LIBRIME_ROOT}/lib/*.a
+  make xcode/simulator/deps/clean
   make xcode/simulator/deps
   for file in ${deps[@]}
   do
