@@ -43,7 +43,7 @@ boost-copy:
 		cp -rf ${ICU_FRAMEWORK_PATH}/icuio.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icuuc.xcframework Frameworks
 
-		
+
 
 boost-clean:
 	${MAKE} -C boost-iosx clean
@@ -58,4 +58,4 @@ librime-build: librime-check
 
 librime-clean:
 	rm -rf ${mkfile_dir}/librime*.patch.apply
-	rm -rf librime librime-sbxlm Frameworks/lib*.xcframework lib/*
+	rm -rf librime Frameworks/lib*.xcframework lib/*
