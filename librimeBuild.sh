@@ -43,11 +43,21 @@ function prepare_library() {
   rm -rf ${LIBRIME_ROOT}/plugins/lua
   ${LIBRIME_ROOT}/install-plugins.sh imfuxiao/librime-lua@main
 
+
   # install charcode
   #rm -rf ${RIME_ROOT}/librime/plugins/librime-charcode
   #${RIME_ROOT}/librime/install-plugins.sh rime/librime-charcode
   #extern void rime_require_module_charcode();\
   #  rime_require_module_charcode();\
+
+  # install predict
+  rm -rf ${LIBRIME_ROOT}/plugins/predict
+  ${LIBRIME_ROOT}/install-plugins.sh rime/librime-predict
+  (
+    cd ${LIBRIME_ROOT}/plugins/predict
+    sed -i '' '/add_subdirectory(tools)/d' CMakeLists.txt
+  )
+
 
   # 添加插件模块依赖
   sed -i "" '/#if RIME_BUILD_SHARED_LIBS/,/#endif/c\
@@ -60,6 +70,7 @@ function prepare_library() {
   extern void rime_require_module_levers();\
   extern void rime_require_module_lua();\
   extern void rime_require_module_octagram();\
+  extern void rime_require_module_predict();\
   // link to default modules explicitly when building static library.\
   static void rime_declare_module_dependencies() {\
     rime_require_module_core();\
@@ -68,6 +79,7 @@ function prepare_library() {
     rime_require_module_levers();\
     rime_require_module_lua();\
     rime_require_module_octagram();\
+    rime_require_module_predict();\
   }\
   #endif\
   ' ${LIBRIME_ROOT}/src/rime_api.cc
@@ -124,7 +136,7 @@ function prepare_library() {
   # transform *.a to xcframework
   rm -rf ${RIME_ROOT}/Frameworks/${LIBRIME_VARIANT}.xcframework
 
-  # 屏蔽 headers ，双键盘引用不同的 librime frameworke, 在 XCoode 编译期间报错：重复的文件 
+  # 屏蔽 headers ，双键盘引用不同的 librime frameworke, 在 XCoode 编译期间报错：重复的文件
   # -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a -headers ${LIBRIME_INCLUDE} \
   # -library ${RIME_LIB}/${LIBRIME_VARIANT}_arm64.a -headers ${LIBRIME_INCLUDE} \
   lipo ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_arm64.a -create -output ${RIME_LIB}/${LIBRIME_VARIANT}_simulator.a
@@ -143,8 +155,19 @@ prepare_library "librime"
 for file in ${deps[@]}
 do
     rm -rf ${RIME_ROOT}/Frameworks/${file}.xcframework
-    xcodebuild -create-xcframework \
-    -library ${RIME_ROOT}/lib/${file}.a \
-    -library ${RIME_ROOT}/lib/${file}_simulator.a \
-    -output ${RIME_ROOT}/Frameworks/${file}.xcframework
+
+    if [ "$file" == "libyaml-cpp" ]
+    then
+      xcodebuild -create-xcframework \
+      -library ${RIME_ROOT}/lib/${file}.a \
+      -headers ${RIME_ROOT}/librime/deps/yaml-cpp/include \
+      -library ${RIME_ROOT}/lib/${file}_simulator.a \
+      -headers ${RIME_ROOT}/librime/deps/yaml-cpp/include \
+      -output ${RIME_ROOT}/Frameworks/${file}.xcframework
+    else
+      xcodebuild -create-xcframework \
+      -library ${RIME_ROOT}/lib/${file}.a \
+      -library ${RIME_ROOT}/lib/${file}_simulator.a \
+      -output ${RIME_ROOT}/Frameworks/${file}.xcframework
+    fi
 done
