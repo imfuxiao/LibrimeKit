@@ -51,13 +51,12 @@ function prepare_library() {
   #  rime_require_module_charcode();\
 
   # install predict
-  rm -rf ${LIBRIME_ROOT}/plugins/predict
-  ${LIBRIME_ROOT}/install-plugins.sh rime/librime-predict
-  (
-    cd ${LIBRIME_ROOT}/plugins/predict
-    sed -i '' '/add_subdirectory(tools)/d' CMakeLists.txt
-  )
-
+  # rm -rf ${LIBRIME_ROOT}/plugins/predict
+  # ${LIBRIME_ROOT}/install-plugins.sh rime/librime-predict
+  # (
+  #   cd ${LIBRIME_ROOT}/plugins/predict
+  #   sed -i '' '/add_subdirectory(tools)/d' CMakeLists.txt
+  # )
 
   # 添加插件模块依赖
   sed -i "" '/#if RIME_BUILD_SHARED_LIBS/,/#endif/c\
@@ -70,7 +69,6 @@ function prepare_library() {
   extern void rime_require_module_levers();\
   extern void rime_require_module_lua();\
   extern void rime_require_module_octagram();\
-  extern void rime_require_module_predict();\
   // link to default modules explicitly when building static library.\
   static void rime_declare_module_dependencies() {\
     rime_require_module_core();\
@@ -79,7 +77,6 @@ function prepare_library() {
     rime_require_module_levers();\
     rime_require_module_lua();\
     rime_require_module_octagram();\
-    rime_require_module_predict();\
   }\
   #endif\
   ' ${LIBRIME_ROOT}/src/rime_api.cc
@@ -135,15 +132,13 @@ function prepare_library() {
 
   # transform *.a to xcframework
   rm -rf ${RIME_ROOT}/Frameworks/${LIBRIME_VARIANT}.xcframework
-
-  # 屏蔽 headers ，双键盘引用不同的 librime frameworke, 在 XCoode 编译期间报错：重复的文件
-  # -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a -headers ${LIBRIME_INCLUDE} \
-  # -library ${RIME_LIB}/${LIBRIME_VARIANT}_arm64.a -headers ${LIBRIME_INCLUDE} \
   lipo ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_x86_64.a ${RIME_LIB}/${LIBRIME_VARIANT}_simulator_arm64.a -create -output ${RIME_LIB}/${LIBRIME_VARIANT}_simulator.a
 
   xcodebuild -create-xcframework \
   -library ${RIME_LIB}/${LIBRIME_VARIANT}_simulator.a \
+  -headers ${LIBRIME_INCLUDE} \
   -library ${RIME_LIB}/${LIBRIME_VARIANT}.a \
+  -headers ${LIBRIME_INCLUDE} \
   -output ${RIME_ROOT}/Frameworks/${LIBRIME_VARIANT}.xcframework
 
   # clean
