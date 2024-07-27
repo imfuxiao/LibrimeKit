@@ -18,7 +18,7 @@ index 58784112..b783b568 100644
 @@ -52,6 +52,12 @@ deps:
  deps/%:
  	$(MAKE) -f deps.mk $(@:deps/%=%)
- 
+
 +xcode:
 +	$(MAKE) -f xcode.mk
 +
@@ -27,7 +27,7 @@ index 58784112..b783b568 100644
 +
  clean:
  	rm -r $(build) || true
- 
+
 diff --git a/README-iOS.md b/README-iOS.md
 new file mode 100644
 index 00000000..81d429e6
@@ -449,7 +449,7 @@ index 00000000..f88956b7
 +    set(ARCHS armv7 armv7s arm64)
 +    set(APPLE_TARGET_TRIPLE_INT arm-apple-ios${DEPLOYMENT_TARGET})
 +  else()
-+    set(APPLE_TARGET_TRIPLE_INT ${ARCHS_SPLIT}-apple-ios${DEPLOYMENT_TARGET})  
++    set(APPLE_TARGET_TRIPLE_INT ${ARCHS_SPLIT}-apple-ios${DEPLOYMENT_TARGET})
 +  endif()
 +elseif(PLATFORM_INT STREQUAL "OS64")
 +  set(SDK_NAME iphoneos)
@@ -1073,7 +1073,7 @@ index 00000000..f88956b7
 +)
 +
 +if(NAMED_LANGUAGE_SUPPORT_INT)
-+  list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES 
++  list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
 +        CMAKE_OBJC_FLAGS
 +        CMAKE_OBJC_DEBUG
 +        CMAKE_OBJC_MINSIZEREL
@@ -1109,7 +1109,7 @@ index 00000000..f88956b7
 +set(CMAKE_FIND_FRAMEWORK FIRST)
 +
 +# Set up the default search directories for frameworks.
-+if(PLATFORM_INT MATCHES "^MAC_CATALYST") 
++if(PLATFORM_INT MATCHES "^MAC_CATALYST")
 +  set(CMAKE_FRAMEWORK_PATH
 +          ${CMAKE_DEVELOPER_ROOT}/Library/PrivateFrameworks
 +          ${CMAKE_OSX_SYSROOT_INT}/System/Library/Frameworks
@@ -1176,7 +1176,7 @@ index fe68ccdd..32c503e3 100644
  	-DCMAKE_INSTALL_PREFIX:PATH="$(prefix)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
- 
+
  googletest:
 @@ -47,6 +48,7 @@ googletest:
  	-DBUILD_GMOCK:BOOL=OFF \
@@ -1184,7 +1184,7 @@ index fe68ccdd..32c503e3 100644
  	-DCMAKE_INSTALL_PREFIX:PATH="$(prefix)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
- 
+
  leveldb:
 @@ -56,6 +58,7 @@ leveldb:
  	-DLEVELDB_BUILD_TESTS:BOOL=OFF \
@@ -1192,7 +1192,7 @@ index fe68ccdd..32c503e3 100644
  	-DCMAKE_INSTALL_PREFIX:PATH="$(prefix)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
- 
+
  marisa-trie:
 @@ -63,15 +66,40 @@ marisa-trie:
  	cmake . -B$(build) \
@@ -1200,7 +1200,7 @@ index fe68ccdd..32c503e3 100644
  	-DCMAKE_INSTALL_PREFIX:PATH="$(prefix)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
- 
+
  opencc:
 +ifndef RIME_IOS_CROSS_COMPILING
  	cd $(src_dir)/opencc; \
@@ -1232,7 +1232,7 @@ index fe68ccdd..32c503e3 100644
 +	$(RIME_CMAKE_FLAGS) \
 +	&& cmake --build $(build)/opencc_arm64 --target install
 +endif
- 
+
  yaml-cpp:
  	cd $(src_dir)/yaml-cpp; \
 @@ -81,4 +109,5 @@ yaml-cpp:
@@ -1248,7 +1248,7 @@ index f7594089..fa94808f 100644
 @@ -80,6 +80,7 @@ else()
      ${rime_plugins_deps})
  endif()
- 
+
 +
  if(BUILD_SHARED_LIBS)
    add_library(rime ${rime_src})
@@ -1281,13 +1281,109 @@ index f7594089..fa94808f 100644
 +
 +
    install(TARGETS rime DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
- 
+
    if(BUILD_SEPARATE_LIBS)
 @@ -167,3 +191,4 @@ else()
      ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
    install(TARGETS rime-static DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
  endif()
 +
+diff --git a/src/rime/gear/schema_list_translator.cc b/src/rime/gear/schema_list_translator.cc
+index e31dfaf1..166fdcd2 100644
+--- a/src/rime/gear/schema_list_translator.cc
++++ b/src/rime/gear/schema_list_translator.cc
+@@ -25,12 +25,13 @@ class SchemaSelection : public SimpleCandidate, public SwitcherCommand {
+ };
+
+ void SchemaSelection::Apply(Switcher* switcher) {
+-  switcher->Deactivate();
+-  if (Engine* engine = switcher->attached_engine()) {
+-    if (keyword_ != engine->schema()->schema_id()) {
+-      engine->ApplySchema(new Schema(keyword_));
++  switcher->DeactivateAndApply([this, switcher] {
++    if (Engine* engine = switcher->attached_engine()) {
++      if (keyword_ != engine->schema()->schema_id()) {
++        engine->ApplySchema(new Schema(keyword_));
++      }
+     }
+-  }
++  });
+ }
+
+ class SchemaAction : public ShadowCandidate, public SwitcherCommand {
+diff --git a/src/rime/gear/switch_translator.cc b/src/rime/gear/switch_translator.cc
+index 831a3cd4..f327a64d 100644
+--- a/src/rime/gear/switch_translator.cc
++++ b/src/rime/gear/switch_translator.cc
+@@ -55,15 +55,16 @@ class Switch : public SimpleCandidate, public SwitcherCommand {
+ };
+
+ void Switch::Apply(Switcher* switcher) {
+-  if (Engine* engine = switcher->attached_engine()) {
+-    engine->context()->set_option(keyword_, target_state_);
+-  }
+-  if (auto_save_) {
+-    if (Config* user_config = switcher->user_config()) {
+-      user_config->SetBool("var/option/" + keyword_, target_state_);
++  switcher->DeactivateAndApply([this, switcher] {
++    if (Engine* engine = switcher->attached_engine()) {
++      engine->context()->set_option(keyword_, target_state_);
+     }
+-  }
+-  switcher->Deactivate();
++    if (auto_save_) {
++      if (Config* user_config = switcher->user_config()) {
++        user_config->SetBool("var/option/" + keyword_, target_state_);
++      }
++    }
++  });
+ }
+
+ class RadioOption;
+@@ -100,8 +101,7 @@ class RadioOption : public SimpleCandidate, public SwitcherCommand {
+ };
+
+ void RadioOption::Apply(Switcher* switcher) {
+-  group_->SelectOption(this);
+-  switcher->Deactivate();
++  switcher->DeactivateAndApply([this] { group_->SelectOption(this); });
+ }
+
+ void RadioOption::UpdateState(bool selected) {
+diff --git a/src/rime/switcher.cc b/src/rime/switcher.cc
+index 4abb3f4d..d283a92b 100644
+--- a/src/rime/switcher.cc
++++ b/src/rime/switcher.cc
+@@ -249,9 +249,16 @@ void Switcher::Activate() {
+ }
+
+ void Switcher::Deactivate() {
+-  context_->Clear();
++  active_ = false;
+   engine_->set_active_engine();
++  context_->Clear();
++}
++
++void Switcher::DeactivateAndApply(function<void()> apply) {
+   active_ = false;
++  engine_->set_active_engine();
++  apply();
++  context_->Clear();
+ }
+
+ void Switcher::LoadSettings() {
+diff --git a/src/rime/switcher.h b/src/rime/switcher.h
+index 0c92db79..7ad7676e 100644
+--- a/src/rime/switcher.h
++++ b/src/rime/switcher.h
+@@ -40,6 +40,7 @@ class Switcher : public Processor, public Engine {
+   void RefreshMenu();
+   void Activate();
+   void Deactivate();
++  void DeactivateAndApply(function<void()> apply);
+
+   Engine* attached_engine() const { return engine_; }
+   Config* user_config() const { return user_config_.get(); }
 diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
 index 62c4c1d6..4880643a 100644
 --- a/test/CMakeLists.txt
