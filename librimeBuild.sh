@@ -41,7 +41,7 @@ function prepare_library() {
 
   # install lua plugin
   rm -rf ${LIBRIME_ROOT}/plugins/lua
-  ${LIBRIME_ROOT}/install-plugins.sh imfuxiao/librime-lua@main
+  ${LIBRIME_ROOT}/install-plugins.sh imfuxiao/librime-lua@develop
 
 
   # install charcode
@@ -61,7 +61,7 @@ function prepare_library() {
   # 添加插件模块依赖
   sed -i "" '/#if RIME_BUILD_SHARED_LIBS/,/#endif/c\
   #if RIME_BUILD_SHARED_LIBS\
-  #define rime_declare_module_dependencies()\
+  void rime_declare_module_dependencies() {}\
   #else\
   extern void rime_require_module_core();\
   extern void rime_require_module_dict();\
@@ -70,7 +70,7 @@ function prepare_library() {
   extern void rime_require_module_lua();\
   extern void rime_require_module_octagram();\
   // link to default modules explicitly when building static library.\
-  static void rime_declare_module_dependencies() {\
+  void rime_declare_module_dependencies() {\
     rime_require_module_core();\
     rime_require_module_dict();\
     rime_require_module_gears();\
