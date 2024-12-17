@@ -16,5 +16,5 @@ DerivedData/
 .librime
 .boost-iosx
 .boost
-
 .idea
+.vscode

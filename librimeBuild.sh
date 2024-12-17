@@ -43,6 +43,8 @@ function prepare_library() {
   rm -rf ${LIBRIME_ROOT}/plugins/lua
   ${LIBRIME_ROOT}/install-plugins.sh imfuxiao/librime-lua@develop
 
+  rm -rf ${LIBRIME_ROOT}/plugins/predict
+  ${LIBRIME_ROOT}/install-plugins.sh imfuxiao/librime-predict@main
 
   # install charcode
   #rm -rf ${RIME_ROOT}/librime/plugins/librime-charcode
@@ -69,6 +71,7 @@ function prepare_library() {
   extern void rime_require_module_levers();\
   extern void rime_require_module_lua();\
   extern void rime_require_module_octagram();\
+  extern void rime_require_module_predict();\
   // link to default modules explicitly when building static library.\
   void rime_declare_module_dependencies() {\
     rime_require_module_core();\
@@ -77,6 +80,7 @@ function prepare_library() {
     rime_require_module_levers();\
     rime_require_module_lua();\
     rime_require_module_octagram();\
+    rime_require_module_predict();\
   }\
   #endif\
   ' ${LIBRIME_ROOT}/src/rime_api.cc
