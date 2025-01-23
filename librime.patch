@@ -19,7 +19,7 @@ index f9e3eb9f..f805f6c3 100644
 @@ -58,6 +58,12 @@ deps:
  deps/%:
  	$(MAKE) -f deps.mk $(@:deps/%=%)
-
+ 
 +xcode:
 +	$(MAKE) -f xcode.mk
 +
@@ -28,7 +28,7 @@ index f9e3eb9f..f805f6c3 100644
 +
  clean:
  	rm -r $(build) || true
-
+ 
 diff --git a/README-iOS.md b/README-iOS.md
 new file mode 100644
 index 00000000..81d429e6
@@ -450,7 +450,7 @@ index 00000000..f88956b7
 +    set(ARCHS armv7 armv7s arm64)
 +    set(APPLE_TARGET_TRIPLE_INT arm-apple-ios${DEPLOYMENT_TARGET})
 +  else()
-+    set(APPLE_TARGET_TRIPLE_INT ${ARCHS_SPLIT}-apple-ios${DEPLOYMENT_TARGET})
++    set(APPLE_TARGET_TRIPLE_INT ${ARCHS_SPLIT}-apple-ios${DEPLOYMENT_TARGET})  
 +  endif()
 +elseif(PLATFORM_INT STREQUAL "OS64")
 +  set(SDK_NAME iphoneos)
@@ -1074,7 +1074,7 @@ index 00000000..f88956b7
 +)
 +
 +if(NAMED_LANGUAGE_SUPPORT_INT)
-+  list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
++  list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES 
 +        CMAKE_OBJC_FLAGS
 +        CMAKE_OBJC_DEBUG
 +        CMAKE_OBJC_MINSIZEREL
@@ -1110,7 +1110,7 @@ index 00000000..f88956b7
 +set(CMAKE_FIND_FRAMEWORK FIRST)
 +
 +# Set up the default search directories for frameworks.
-+if(PLATFORM_INT MATCHES "^MAC_CATALYST")
++if(PLATFORM_INT MATCHES "^MAC_CATALYST") 
 +  set(CMAKE_FRAMEWORK_PATH
 +          ${CMAKE_DEVELOPER_ROOT}/Library/PrivateFrameworks
 +          ${CMAKE_OSX_SYSROOT_INT}/System/Library/Frameworks
@@ -1177,7 +1177,7 @@ index 113f78c0..57e62ea3 100644
  	-DCMAKE_INSTALL_PREFIX:PATH="$(prefix)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
-
+ 
  googletest:
 @@ -47,6 +48,7 @@ googletest:
  	-DBUILD_GMOCK:BOOL=OFF \
@@ -1185,7 +1185,7 @@ index 113f78c0..57e62ea3 100644
  	-DCMAKE_INSTALL_PREFIX:PATH="$(prefix)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
-
+ 
  leveldb:
 @@ -56,6 +58,7 @@ leveldb:
  	-DLEVELDB_BUILD_TESTS:BOOL=OFF \
@@ -1193,7 +1193,7 @@ index 113f78c0..57e62ea3 100644
  	-DCMAKE_INSTALL_PREFIX:PATH="$(prefix)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
-
+ 
  marisa-trie:
 @@ -63,15 +66,40 @@ marisa-trie:
  	cmake . -B$(build) \
@@ -1201,7 +1201,7 @@ index 113f78c0..57e62ea3 100644
  	-DCMAKE_INSTALL_PREFIX:PATH="$(prefix)" \
 +	$(RIME_CMAKE_FLAGS) \
  	&& cmake --build $(build) --target install
-
+ 
  opencc:
 +ifndef RIME_IOS_CROSS_COMPILING
  	cd $(src_dir)/opencc; \
@@ -1233,7 +1233,7 @@ index 113f78c0..57e62ea3 100644
 +	$(RIME_CMAKE_FLAGS) \
 +	&& cmake --build $(build)/opencc_arm64 --target install
 +endif
-
+ 
  yaml-cpp:
  	cd $(src_dir)/yaml-cpp; \
 @@ -81,4 +109,5 @@ yaml-cpp:
@@ -1249,7 +1249,7 @@ index 16082869..aebf7e4b 100644
 @@ -80,6 +80,7 @@ else()
      ${rime_plugins_deps})
  endif()
-
+ 
 +
  if(BUILD_SHARED_LIBS)
    add_library(rime ${rime_src})
