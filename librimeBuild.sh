@@ -6,12 +6,7 @@ RIME_ROOT="$(cd "$(dirname "$0")"; pwd)"
 echo ${RIME_ROOT}
 
 # librime dependences build
-if [[ ! -d ${RIME_ROOT}/.boost ]]
-then
-  mkdir ${RIME_ROOT}/.boost
-  cp -R ${RIME_ROOT}/boost-iosx/dest ${RIME_ROOT}/.boost
-fi
-export BOOST_ROOT=$RIME_ROOT/.boost/dest
+export BOOST_ROOT=$RIME_ROOT/boost-iosx/boost
 
 # temp directory for librime lib and headers
 RIME_LIB=${RIME_ROOT}/lib

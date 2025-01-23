@@ -20,32 +20,30 @@ endif
 boost-build: cocoapods
 	$(info boost build begin)
 	${MAKE} -C boost-iosx build
-	mkdir -p Frameworks/Headers && \
+	rm -rf Frameworks/Headers Frameworks/boost*.xcframework Frameworks/icu*.xcframework && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_atomic.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_filesystem.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_regex.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_locale.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_system.xcframework Frameworks && \
-		cp -rf ${BOOST_FRAMEWORK_PATH}/dest/boost Frameworks/Headers && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/Headers Frameworks/Headers && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icudata.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icui18n.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icuio.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icuuc.xcframework Frameworks
 
 boost-copy:
-	mkdir -p Frameworks/Headers && \
+	rm -rf Frameworks/Headers Frameworks/boost*.xcframework Frameworks/icu*.xcframework  && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_atomic.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_filesystem.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_regex.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_locale.xcframework Frameworks && \
 		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/boost_system.xcframework Frameworks && \
-		cp -rf ${BOOST_FRAMEWORK_PATH}/dest/boost Frameworks/Headers && \
+		cp -rf ${BOOST_FRAMEWORK_PATH}/frameworks/Headers Frameworks/Headers && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icudata.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icui18n.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icuio.xcframework Frameworks && \
 		cp -rf ${ICU_FRAMEWORK_PATH}/icuuc.xcframework Frameworks
-
-
 
 boost-clean:
 	${MAKE} -C boost-iosx clean
@@ -59,5 +57,6 @@ librime-build: librime-check
 	${mkfile_dir}/librimeBuild.sh
 
 librime-clean:
+	rm -rf include lib
 	rm -rf ${mkfile_dir}/librime*.patch.apply
 	rm -rf librime Frameworks/lib*.xcframework lib/*
